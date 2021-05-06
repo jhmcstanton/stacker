@@ -6,6 +6,7 @@ author:        Jim McStanton
 maintainer:    jim@jhmcstanton.com
 copyright:     2021 Jim McStanton
 license:       AGPL-3
+license-file:  LICENSE
 extra-source-files:
     README.md
     CHANGELOG.md
