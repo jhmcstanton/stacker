@@ -1,0 +1,18 @@
+body {
+    margin: 2% 4% auto;
+    padding: 0;
+    line-height: 1.8em;
+    font-size: 18px;
+}
+
+input[type=text] {
+    width: 15%;
+    display: block;
+}
+
+.horizontal {
+    width: 40%;
+    display: inline-block;
+    height: 100%;
+    vertical-align: top;
+}
