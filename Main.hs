@@ -5,6 +5,8 @@ import qualified Data.Cache.LRU.IO                    as Cache
 import           Data.UUID                            (UUID)
 import qualified Data.UUID                            as UUID
 import qualified Data.UUID.V4                         as UUID
+import           Data.Sequence                        (Seq)
+import qualified Data.Sequence                        as Seq
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as Text
 import qualified Web.Scotty                           as Sc
@@ -16,11 +18,9 @@ import qualified Network.Wai                          as Wai
 import qualified Network.Wai.Handler.Warp             as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai (logStdout)
 
-newtype RoomID   = RoomID { unRoomID   :: UUID } deriving (Eq, Ord, Read, Show)
-newtype UserID   = UserId { unUserID   :: Text } deriving (Eq, Ord, Read, Show)
+import           Data.Queue
+import           Data.Types
 
-data RoomState = RoomState { roomID :: RoomID } 
-                 deriving (Eq, Ord, Read, Show)
 type RoomCache = AtomicLRU RoomID RoomState
 
 data RoomPost = CreateRoom
@@ -92,7 +92,7 @@ createRoom :: RoomCache -> Sc.ActionM ()
 createRoom cache = do
   rstate <- Sc.liftAndCatchIO $ do
     rID   <- fmap RoomID UUID.nextRandom
-    let rstate = RoomState rID
+    let rstate = newRoom rID
     Cache.insert rID rstate cache
     putLText $ "Created room with ID [" <> roomIDToText rID <> "]"
     pure rstate
