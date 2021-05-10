@@ -22,6 +22,7 @@ executable              stacker
                       , lrucache
                       , protolude
                       , scotty
+                      , scotty-cookie
                       , text
                       , uuid
                       , wai

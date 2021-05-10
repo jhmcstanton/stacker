@@ -12,6 +12,8 @@ module Data.Types
   , newRoom
   , qGlobal
   , qLocal
+  , deleteUser
+  , newUser
   ) where
 import           Protolude             hiding (Text, empty, local)
 import           Data.Set       (Set)
@@ -25,18 +27,20 @@ newtype RoomID   = RoomID { unRoomID :: UUID } deriving (Eq, Ord, Read, Show)
 newtype UserID   = UserID { unUserID :: Text } deriving (Eq, Ord, Read, Show)
 
 type SpeakReq = UserID
+type RoomName = Text
 
 data RoomState' a = RoomState {
-    roomID :: RoomID,
-    users  :: Set UserID,
-    global :: Queue a,
-    local  :: Queue a
+    roomID   :: RoomID,
+    roomName :: RoomName,
+    users    :: Set UserID,
+    global   :: Queue a,
+    local    :: Queue a
   } deriving (Eq, Ord, Read, Show)
 
 type RoomState = RoomState' SpeakReq
 
-newRoom :: RoomID -> RoomState' a
-newRoom rid = RoomState rid Set.empty Q.empty Q.empty
+newRoom :: RoomID -> RoomName -> RoomState' a
+newRoom rid rname = RoomState rid rname Set.empty Q.empty Q.empty
 
 newUser :: UserID -> RoomState' a -> RoomState' a
 newUser user roomState@RoomState{users}    = roomState{users = Set.insert user users}
