@@ -14,6 +14,8 @@ module Data.Types
   , qLocal
   ) where
 import           Protolude             hiding (Text, empty, local)
+import           Data.Set       (Set)
+import qualified Data.Set       as Set
 import           Data.Text.Lazy (Text)
 import           Data.UUID      (UUID)
 
@@ -26,6 +28,7 @@ type SpeakReq = UserID
 
 data RoomState' a = RoomState {
     roomID :: RoomID,
+    users  :: Set UserID,
     global :: Queue a,
     local  :: Queue a
   } deriving (Eq, Ord, Read, Show)
@@ -33,7 +36,13 @@ data RoomState' a = RoomState {
 type RoomState = RoomState' SpeakReq
 
 newRoom :: RoomID -> RoomState' a
-newRoom rid = RoomState rid Q.empty Q.empty
+newRoom rid = RoomState rid Set.empty Q.empty Q.empty
+
+newUser :: UserID -> RoomState' a -> RoomState' a
+newUser user roomState@RoomState{users}    = roomState{users = Set.insert user users}
+
+deleteUser :: UserID -> RoomState' a -> RoomState' a
+deleteUser user roomState@RoomState{users} = roomState{users = Set.delete user users}
 
 qLocal :: a -> RoomState' a -> RoomState' a
 qLocal req = ql (|> req)
