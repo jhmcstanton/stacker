@@ -1,19 +1,20 @@
-import           Protolude              hiding  (Text)
+import           Protolude                            hiding (Text)
 
-import           Data.Cache.LRU.IO              (AtomicLRU)
-import qualified Data.Cache.LRU.IO              as Cache
-import           Data.UUID                      (UUID)
-import qualified Data.UUID                      as UUID
-import qualified Data.UUID.V4                   as UUID
-import           Data.Text.Lazy                 (Text)
-import qualified Data.Text.Lazy                 as Text
-import qualified Web.Scotty                     as Sc
-import qualified Network.HTTP.Types.Status      as Sc
-import qualified Network.Wai.Middleware.Gzip    as Sc
-import qualified Network.Wai.Handler.WebSockets as WaiWs
-import qualified Network.WebSockets             as WS
-import qualified Network.Wai                    as Wai
-import qualified Network.Wai.Handler.Warp       as Warp
+import           Data.Cache.LRU.IO                    (AtomicLRU)
+import qualified Data.Cache.LRU.IO                    as Cache
+import           Data.UUID                            (UUID)
+import qualified Data.UUID                            as UUID
+import qualified Data.UUID.V4                         as UUID
+import           Data.Text.Lazy                       (Text)
+import qualified Data.Text.Lazy                       as Text
+import qualified Web.Scotty                           as Sc
+import qualified Network.HTTP.Types.Status            as Sc
+import qualified Network.Wai.Middleware.Gzip          as Sc
+import qualified Network.Wai.Handler.WebSockets       as WaiWs
+import qualified Network.WebSockets                   as WS
+import qualified Network.Wai                          as Wai
+import qualified Network.Wai.Handler.Warp             as Warp
+import qualified Network.Wai.Middleware.RequestLogger as Wai (logStdout)
 
 newtype RoomID   = RoomID { unRoomID   :: UUID } deriving (Eq, Ord, Read, Show)
 newtype UserID   = UserId { unUserID   :: Text } deriving (Eq, Ord, Read, Show)
@@ -41,7 +42,7 @@ main = do
 scottyApp :: RoomCache -> IO Wai.Application
 scottyApp cache =
   Sc.scottyApp $ do
-    Sc.middleware $ Sc.gzip $ Sc.def { Sc.gzipFiles = Sc.GzipCompress }
+    Sc.middleware $ Sc.gzip (Sc.def { Sc.gzipFiles = Sc.GzipCompress }) . Wai.logStdout
 
     Sc.get "/" $
       Sc.file "index.html"
@@ -93,6 +94,7 @@ createRoom cache = do
     rID   <- fmap RoomID UUID.nextRandom
     let rstate = RoomState rID
     Cache.insert rID rstate cache
+    putLText $ "Created room with ID [" <> roomIDToText rID <> "]"
     pure rstate
 
   let rid   = unRoomID $ roomID rstate
@@ -103,3 +105,6 @@ uuidToText = Text.fromStrict . UUID.toText
 
 textToUUID :: Text -> Maybe UUID
 textToUUID = UUID.fromText . Text.toStrict
+
+roomIDToText :: RoomID -> Text
+roomIDToText = uuidToText . unRoomID
