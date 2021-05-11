@@ -56,7 +56,6 @@ scottyApp cache =
   Sc.scottyApp $ do
     Sc.middleware $ Sc.gzip (Sc.def { Sc.gzipFiles = Sc.GzipCompress }) . Wai.logStdout
 
-    -- TODO: BIG TODO: Put in a cookie banner here
     Sc.get "/" $
       Sc.file "index.html"
     Sc.post "/" $ do
@@ -70,6 +69,8 @@ scottyApp cache =
               let rid = unRoomID . roomIDParam $ jr
               Sc.setSimpleCookie (userCookie rid) (Text.toStrict $ username req)
               Sc.redirect $ "/room/" <> uuidToText rid
+    Sc.get "/static/cookie-policy/"  $ Sc.file "static/cookie-policy.html"
+    Sc.get "/static/privacy-policy/" $ Sc.file "static/privacy.html"
     -- TODO: Apply some simple scheme to avoid spam creation of rooms
     Sc.get "/room/:pRoomID" $
       Sc.file "room.html"
