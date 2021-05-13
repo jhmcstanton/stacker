@@ -100,14 +100,17 @@ websockApp cache pending = do
       case maybeRoom of
         Nothing       -> WS.sendClose conn ("byyyyyyyeeeee" :: Text)
         Just initRoom -> do
-          let pushWorld' = pushWorld room conn
           let initRoom' = newUser attendee initRoom
           Cache.insert room initRoom' cache
 
           createReader attendee room conn cache
-          forever $ do
-            pushWorld' cache
-            threadDelay $ 1 * 1000000
+          -- this intentionally uses initRoom instead of initRoom'
+          -- to force the first push of the state of the room
+          iterate_ initRoom $ \rstate -> do
+            next <- pushWorld room conn cache rstate
+            threadDelay 100000
+            pure next
+          pure ()
 
     Just _ -> WS.sendClose conn ("Bad payload byyyeee" :: Text)
 
@@ -146,17 +149,19 @@ param var = fmap snd . find (\(par, _) -> par == var)
 lazyError :: Text -> a
 lazyError t = error $ Text.toStrict t
 
-pushWorld :: RoomID -> WS.Connection -> RoomCache -> IO ()
-pushWorld rid conn cache = do
+pushWorld :: RoomID -> WS.Connection -> RoomCache -> RoomState -> IO RoomState
+pushWorld rid conn cache prevState = do
   maybeRoom <- Cache.lookup rid cache
   case maybeRoom of
-    Nothing   -> WS.sendClose conn ("byyyyyyyeeeee" :: Text)
-    Just room -> WS.sendTextData conn . encode $ WORLD {
+    Nothing   -> WS.sendClose conn ("byyyyyyyeeeee" :: Text) >> pure prevState
+    Just room -> do
+      when (room /= prevState) $ WS.sendTextData conn . encode $ WORLD {
         attendees = Set.toList (users room),
         local     = toList (rlocal  room),
         broad     = toList (rglobal room),
         name      = roomName room
       }
+      pure room
 
 createReader :: UserID -> RoomID -> WS.Connection -> RoomCache -> IO ThreadId
 createReader attendee rid conn cache = forkIO . forever $ do
@@ -177,3 +182,6 @@ createReader attendee rid conn cache = forkIO . forever $ do
                             LOCAL -> nextLocal
                             _     -> nextGlobal) room
             Cache.insert rid room' cache
+
+iterate_ :: Monad f => a -> (a -> f a) -> f a
+iterate_ a f = f a >>= \a' -> iterate_ a' f
