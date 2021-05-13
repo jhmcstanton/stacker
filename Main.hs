@@ -1,6 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 import           Protolude                            hiding (Text, local)
 import           Protolude.Error
+import           Protolude.Partial                    (read)
 
 import           Data.Aeson
 import           Data.Cache.LRU.IO                    (AtomicLRU)
@@ -14,8 +15,6 @@ import qualified Data.Set                             as Set
 import qualified Data.Text                            as StrictText
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as Text
-import qualified Web.Scotty                           as Sc
-import qualified Web.Scotty.Cookie                    as Sc
 import qualified Network.HTTP.Types.Status            as Sc
 import qualified Network.Wai.Middleware.Gzip          as Sc
 import qualified Network.Wai.Handler.WebSockets       as WaiWs
@@ -23,6 +22,9 @@ import qualified Network.WebSockets                   as WS
 import qualified Network.Wai                          as Wai
 import qualified Network.Wai.Handler.Warp             as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai (logStdout)
+import qualified System.Environment                   as Sys
+import qualified Web.Scotty                           as Sc
+import qualified Web.Scotty.Cookie                    as Sc
 
 import           Data.Queue
 import           Data.Types
@@ -47,7 +49,10 @@ acceptedCookiesCookie = "cookiesAccepted"
 
 main :: IO ()
 main = do
-  let port = 80
+  envport <- Sys.lookupEnv "PORT"
+  let port = case envport of
+        Nothing -> 80
+        Just p  -> read p
   let settings = Warp.setPort port Warp.defaultSettings
   cache <- Cache.newAtomicLRU Nothing
   sapp  <- scottyApp cache

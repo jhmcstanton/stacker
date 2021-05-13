@@ -1,1 +1,1 @@
-web: stack exec stacker
+web: stacker
