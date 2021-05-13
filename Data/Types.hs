@@ -7,11 +7,8 @@ module Data.Types
   , RoomState'(..)
   , RoomState
   , SpeakReq
-  , UserID(..)
   , StackType(..)
-  -- , Action(..)
   , Payload(..)
-  -- , Proto(..)
   , clear
   , clearGlobal
   , clearLocal
@@ -30,13 +27,12 @@ module Data.Types
   ) where
 import           Protolude             hiding (Text, empty, local)
 import           Data.Aeson
-import           Data.Set       (Set)
 import qualified Data.Set       as Set
 import           Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as Text
 import           Data.UUID      (UUID)
 import qualified Data.UUID      as UUID
-import           GHC.Generics
+import           GHC.Generics   ()
 
 import           Data.Queue as Q
 
@@ -108,20 +104,14 @@ qg :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
 qg queueFunc roomState@RoomState{rglobal} = roomState{rglobal=queueFunc rglobal}
 
 data StackType   = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
--- data Action      = QUEUE | NEXT | UPDATE_ATTENDEES | INIT
---                    deriving (Eq, Generic, Ord, Read, Show)
 
 data Payload =
   QUEUE { stack :: StackType                                                        } |
   NEXT { stack :: StackType                                                         } |
-  UPDATE_ATTENDEES { attendees :: [UserID]                                          } |
   WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |
   ClientInit { attendee :: UserID, room :: RoomID                                   }
   deriving (Eq, Generic, Ord, Read, Show)
 
-
--- data Proto   = Proto { action :: Action, payload :: Payload }
---                deriving (Eq, Generic, Ord, Read, Show)
 
 instance FromJSON UserID
 instance ToJSON   UserID
@@ -129,11 +119,7 @@ instance FromJSON RoomID
 instance ToJSON   RoomID
 instance FromJSON StackType
 instance ToJSON   StackType
--- instance FromJSON Action
--- instance ToJSON   Action
 instance ToJSON   Payload where
   toJSON    = genericToJSON    defaultOptions { sumEncoding = TaggedObject "action" "" }
 instance FromJSON Payload where
   parseJSON = genericParseJSON defaultOptions { sumEncoding = TaggedObject "action" "" }
--- instance ToJSON   Proto
--- instance FromJSON Proto

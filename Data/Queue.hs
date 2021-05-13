@@ -8,7 +8,6 @@ module Data.Queue
   , (|>)
   ) where
 import           Protolude            hiding (empty, on)
-import           Data.Sequence (Seq)
 import qualified Data.Sequence as Seq
 
 newtype Queue a = Q (Seq a) deriving (Eq, Ord, Read, Show)

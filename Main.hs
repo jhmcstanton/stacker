@@ -1,6 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
 import           Protolude                            hiding (Text, local)
-import           Protolude.Error
 import           Protolude.Partial                    (read)
 
 import           Data.Aeson
@@ -9,8 +8,6 @@ import qualified Data.Cache.LRU.IO                    as Cache
 import           Data.UUID                            (UUID)
 import qualified Data.UUID                            as UUID
 import qualified Data.UUID.V4                         as UUID
-import           Data.Sequence                        (Seq)
-import qualified Data.Sequence                        as Seq
 import qualified Data.Set                             as Set
 import qualified Data.Text                            as StrictText
 import           Data.Text.Lazy                       (Text)
@@ -26,7 +23,6 @@ import qualified System.Environment                   as Sys
 import qualified Web.Scotty                           as Sc
 import qualified Web.Scotty.Cookie                    as Sc
 
-import           Data.Queue
 import           Data.Types
 
 type RoomCache = AtomicLRU RoomID RoomState
@@ -35,17 +31,8 @@ data RoomPost = CreateRoom { roomNameParam :: Text, username :: Text }
               | JoinRoom   { roomIDParam :: RoomID, username :: Text }
               deriving (Eq, Ord, Read, Show)
 
-createRoomParams :: [Text]
-createRoomParams = ["room-name", "username"]
-
-joinRoomParams :: [Text]
-joinRoomParams = ["room-id", "username"]
-
 userCookie :: UUID -> StrictText.Text
 userCookie rid = "username-" <> (UUID.toText rid)
-
-acceptedCookiesCookie :: StrictText.Text
-acceptedCookiesCookie = "cookiesAccepted"
 
 main :: IO ()
 main = do
@@ -103,13 +90,13 @@ websockApp cache pending = do
           let initRoom' = newUser attendee initRoom
           Cache.insert room initRoom' cache
 
-          createReader attendee room conn cache
+          _ <- createReader attendee room conn cache
           -- this intentionally uses initRoom instead of initRoom'
           -- to force the first push of the state of the room
-          iterate_ initRoom $ \rstate -> do
-            next <- pushWorld room conn cache rstate
+          _ <- iterate_ initRoom $ \rstate -> do
+            curState <- pushWorld room conn cache rstate
             threadDelay 100000
-            pure next
+            pure curState
           pure ()
 
     Just _ -> WS.sendClose conn ("Bad payload byyyeee" :: Text)
@@ -119,9 +106,9 @@ mkRoomPost params = maybeJoin <|> maybeCreate
   where
   maybeJoin    = do
     roomIDP  <- param "room-id" params
-    rID      <- textToUUID roomIDP
+    rID      <- textToRoomID roomIDP
     username <- param "username" params
-    pure $ JoinRoom (RoomID rID) username
+    pure $ JoinRoom rID username
   maybeCreate  = do
     roomName  <- param "room-name" params
     username  <- param "username" params
@@ -140,14 +127,8 @@ createRoom req cache = do
   Sc.setSimpleCookie (userCookie rid) (Text.toStrict $ username req)
   Sc.redirect $ "/room/" <> uuidToText rid
 
-getUsername :: RoomID -> Sc.ActionM (Maybe Text)
-getUsername (RoomID rid) = (fmap . fmap) Text.fromStrict $ Sc.getCookie (userCookie rid)
-
 param :: Text -> [Sc.Param] -> Maybe Text
 param var = fmap snd . find (\(par, _) -> par == var)
-
-lazyError :: Text -> a
-lazyError t = error $ Text.toStrict t
 
 pushWorld :: RoomID -> WS.Connection -> RoomCache -> RoomState -> IO RoomState
 pushWorld rid conn cache prevState = do
@@ -182,6 +163,7 @@ createReader attendee rid conn cache = forkIO . forever $ do
                             LOCAL -> nextLocal
                             _     -> nextGlobal) room
             Cache.insert rid room' cache
+        _       -> WS.sendClose conn ("Unsupported byyyyeee" :: Text)
 
 iterate_ :: Monad f => a -> (a -> f a) -> f a
 iterate_ a f = f a >>= \a' -> iterate_ a' f
