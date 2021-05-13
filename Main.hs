@@ -91,8 +91,6 @@ websockApp cache pending = do
 
   roomidReq <- WS.receiveData conn
   putLByteString roomidReq
-  let deletethis (Just x) = x
-  putLByteString .  encode $ ClientInit (UserID "TestUser") (deletethis $ textToRoomID "82acc0d2-1667-417f-a892-0f9359d11254")
   case decode roomidReq of
     Nothing -> WS.sendClose conn ("Bad UUID byyeeeeeeee" :: Text)
     Just ClientInit{room, attendee} -> do
@@ -107,7 +105,7 @@ websockApp cache pending = do
                 local     = toList (rlocal  initRoom'),
                 broad     = toList (rglobal initRoom')
                 }
-          WS.sendTextData conn . encode $ currentState
+          putLByteString . encode $ currentState
 
           forever $ do
             WS.sendTextData conn $ ("loop data" :: Text)
