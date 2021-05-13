@@ -20,6 +20,8 @@ module Data.Types
   , qLocal
   , deleteUser
   , newUser
+  , nextLocal
+  , nextGlobal
   , uuidToText
   , textToUUID
   , textToRoomID
@@ -84,6 +86,12 @@ qLocal req = ql (|> req)
 qGlobal :: a -> RoomState' a -> RoomState' a
 qGlobal req = qg (|> req)
 
+nextLocal :: RoomState' a -> RoomState' a
+nextLocal = ql next
+
+nextGlobal :: RoomState' a -> RoomState' a
+nextGlobal = qg next
+
 clearLocal :: RoomState' a -> RoomState' a
 clearLocal = ql (const empty)
 
@@ -104,11 +112,11 @@ data StackType   = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
 --                    deriving (Eq, Generic, Ord, Read, Show)
 
 data Payload =
-  QUEUE { stack :: StackType, attendee :: UserID                      } |
-  NEXT { stack :: StackType                                           } |
-  UPDATE_ATTENDEES { attendees :: [UserID]                            } |
-  WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID] } |
-  ClientInit { attendee :: UserID, room :: RoomID                     }
+  QUEUE { stack :: StackType                                                        } |
+  NEXT { stack :: StackType                                                         } |
+  UPDATE_ATTENDEES { attendees :: [UserID]                                          } |
+  WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |
+  ClientInit { attendee :: UserID, room :: RoomID                                   }
   deriving (Eq, Generic, Ord, Read, Show)
 
 

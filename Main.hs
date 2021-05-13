@@ -90,7 +90,6 @@ websockApp cache pending = do
   WS.forkPingThread conn 30 -- TODO: remove this deprecated dill
 
   roomidReq <- WS.receiveData conn
-  putLByteString roomidReq
   case decode roomidReq of
     Nothing -> WS.sendClose conn ("Bad UUID byyeeeeeeee" :: Text)
     Just ClientInit{room, attendee} -> do
@@ -98,17 +97,22 @@ websockApp cache pending = do
       case maybeRoom of
         Nothing       -> WS.sendClose conn ("byyyyyyyeeeee" :: Text)
         Just initRoom -> do
+          let pushWorld' = pushWorld room conn
           let initRoom' = newUser attendee initRoom
-          Cache.insert room initRoom cache
-          let currentState = WORLD {
-                attendees = Set.toList (users initRoom'),
-                local     = toList (rlocal  initRoom'),
-                broad     = toList (rglobal initRoom')
-                }
-          putLByteString . encode $ currentState
+          Cache.insert room initRoom' cache
+          -- let currentState = WORLD {
+          --       attendees = Set.toList (users initRoom'),
+          --       local     = toList (rlocal  initRoom'),
+          --       broad     = toList (rglobal initRoom'),
+          --       name      = roomName initRoom'
+          --       }
+          -- putLByteString . encode $ currentState
+          -- WS.sendTextData conn . encode $ currentState
 
+          createReader attendee room conn cache
           forever $ do
-            WS.sendTextData conn $ ("loop data" :: Text)
+            pushWorld' cache
+            -- WS.sendTextData conn $ ("loop data" :: Text)
             threadDelay $ 1 * 1000000
 
     Just _ -> WS.sendClose conn ("Bad payload byyyeee" :: Text)
@@ -147,3 +151,35 @@ param var = fmap snd . find (\(par, _) -> par == var)
 
 lazyError :: Text -> a
 lazyError t = error $ Text.toStrict t
+
+pushWorld :: RoomID -> WS.Connection -> RoomCache -> IO ()
+pushWorld rid conn cache = do
+  maybeRoom <- Cache.lookup rid cache
+  case maybeRoom of
+    Nothing   -> WS.sendClose conn ("byyyyyyyeeeee" :: Text)
+    Just room -> WS.sendTextData conn . encode $ WORLD {
+        attendees = Set.toList (users room),
+        local     = toList (rlocal  room),
+        broad     = toList (rglobal room),
+        name      = roomName room
+      }
+
+createReader :: UserID -> RoomID -> WS.Connection -> RoomCache -> IO ThreadId
+createReader attendee rid conn cache = forkIO . forever $ do
+  msg <- WS.receiveData conn
+  maybeRoom <- Cache.lookup rid cache
+  case maybeRoom of
+    Nothing       -> WS.sendClose conn ("Room is closed byyyyee" :: Text)
+    Just room -> do
+      case decode msg of
+        Nothing -> WS.sendClose conn ("Bad UUID byyeeeeeeee" :: Text)
+        Just QUEUE{stack} -> do
+            let room' = (case stack of
+                           LOCAL -> qLocal
+                           _     -> qGlobal) attendee room
+            Cache.insert rid room' cache
+        Just NEXT{stack} -> do
+            let room' = (case stack of
+                            LOCAL -> nextLocal
+                            _     -> nextGlobal) room
+            Cache.insert rid room' cache

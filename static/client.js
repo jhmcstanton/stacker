@@ -12,11 +12,6 @@ document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
 
 const ws = new WebSocket(`ws://${location.host}${location.pathname}:80`);
 
-ws.onopen = () => {
-    const initMsg = { action: "ClientInit", room: roomid, attendee: username};
-    ws.send(JSON.stringify(initMsg));
-};
-
 ws.onclose = function(m) {
     console.log(`Connection close reason: ${m.reason}`);
     alert("connection closed");
@@ -32,13 +27,14 @@ const protocol = function(action) {
     return (el) => {
         const stacktype = el.parentElement.id;
         const msg = { action: action, stack: stacktype };
-        debugLog(`From protocol: [msg]`);
+        debugLog(`From protocol: [${JSON.stringify(msg)}]`);
         ws.send(JSON.stringify(msg));
     };
 };
 const QUEUE_ACT     = 'QUEUE';
 const NEXT_ACT      = 'NEXT';
 const ATTENDEES_ACT = 'UPDATE_ATTENDEES';
+const UPDATE_WORLD  = 'WORLD';
 const q    = protocol(QUEUE_ACT);
 const next = protocol(NEXT_ACT);
 
@@ -64,6 +60,21 @@ const updateAttendees = function(attendees) {
     });
 };
 
+const newQueue = function(stacktype, items) {
+    const stackel = document.getElementById(`${stacktype.toLowerCase()}-discussion`);
+    stackel.innerHTML = '';
+    items.forEach(item => {
+        const newli   = document.createElement('li');
+        newli.appendChild(document.createTextNode(item));
+        stackel.appendChild(newli);
+    });
+};
+
+const updateWorld = function(msg) {
+    updateAttendees(msg['attendees']);
+    newQueue(LOCALSTACK, msg['local']);
+    newQueue(BROADSTACK, msg['broad']);
+};
 
 ws.onmessage = evt => {
     const m = JSON.parse(evt.data);
@@ -82,7 +93,17 @@ ws.onmessage = evt => {
     case ATTENDEES_ACT:
         debugLog('Updating attendees');
         updateAttendees(payload['attendees']);
+        break;
+    case UPDATE_WORLD:
+        debugLog('Updating entire page');
+        updateWorld(m);
+        break;
     default:
-        console.log(`Unknown action: [${m}]`);
+        console.log(`Unknown action: [${evt.data}]`);
     }
+};
+
+ws.onopen = () => {
+    const initMsg = { action: "ClientInit", room: roomid, attendee: username};
+    ws.send(JSON.stringify(initMsg));
 };
