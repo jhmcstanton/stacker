@@ -70,10 +70,15 @@ const newQueue = function(stacktype, items) {
     });
 };
 
+const setRoomName = function(name) {
+    document.getElementById('roomheader').innerHTML = name;
+};
+
 const updateWorld = function(msg) {
     updateAttendees(msg['attendees']);
     newQueue(LOCALSTACK, msg['local']);
     newQueue(BROADSTACK, msg['broad']);
+    setRoomName(msg['name']);
 };
 
 ws.onmessage = evt => {

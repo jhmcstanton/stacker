@@ -75,13 +75,11 @@ scottyApp cache =
     Sc.get "/static/cookie-policy/"  $ Sc.file "static/cookie-policy.html"
     Sc.get "/static/privacy-policy/" $ Sc.file "static/privacy.html"
     -- TODO: Apply some simple scheme to avoid spam creation of rooms
-    Sc.get "/room/:pRoomID" $
-      Sc.file "room.html"
+    Sc.get "/room/:pRoomID"    $ Sc.file "room.html"
     -- TODO: setup some static middleware
-    Sc.get "/static/client.js" $
-      Sc.file "static/client.js"
-    Sc.get "/static/style.css" $
-      Sc.file "static/style.css"
+    Sc.get "/static/client.js" $ Sc.file "static/client.js"
+    Sc.get "/static/invite.js" $ Sc.file "static/invite.js"
+    Sc.get "/static/style.css" $ Sc.file "static/style.css"
 
 websockApp :: RoomCache -> WS.ServerApp
 websockApp cache pending = do
@@ -100,19 +98,10 @@ websockApp cache pending = do
           let pushWorld' = pushWorld room conn
           let initRoom' = newUser attendee initRoom
           Cache.insert room initRoom' cache
-          -- let currentState = WORLD {
-          --       attendees = Set.toList (users initRoom'),
-          --       local     = toList (rlocal  initRoom'),
-          --       broad     = toList (rglobal initRoom'),
-          --       name      = roomName initRoom'
-          --       }
-          -- putLByteString . encode $ currentState
-          -- WS.sendTextData conn . encode $ currentState
 
           createReader attendee room conn cache
           forever $ do
             pushWorld' cache
-            -- WS.sendTextData conn $ ("loop data" :: Text)
             threadDelay $ 1 * 1000000
 
     Just _ -> WS.sendClose conn ("Bad payload byyyeee" :: Text)

@@ -6,7 +6,7 @@
         <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
     <body>
-        <h1></h1>
+        <h1 id="roomheader"></h1>
         <p id="userdisplay"></p>
         <div class="centerer">
             <div class="horizontal" id="LOCAL">
@@ -28,7 +28,11 @@
                 <ul id="attendees">
                 </ul>
             </div>
+            <p>Link to room: <span id="copylink"></span></p>
+            <br>
+            <button onclick="copier()">Copy share link to clipboard.</button>
         </div>
         <script src="/static/client.js"></script>
+        <script src="/static/invite.js"></script>
     </body>
 </html>
