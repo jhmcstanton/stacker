@@ -6,5 +6,29 @@
         <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
     <body>
+        <h1></h1>
+        <p id="userdisplay"></p>
+        <div class="centerer">
+            <div class="horizontal" id="local">
+                <h2>Current Discussion</h2>
+                <ol id="local-discussion">
+                </ol>
+                <button onclick="q(this)">STACK this discussion!</button>
+                <button onclick="next(this)">Next in STACK!</button>
+            </div>
+            <div class="horizontal" id="broad">
+                <h2>Broader Discussion</h2>
+                <ol id="broad-discussion">
+                </ol>
+                <button onclick="q(this)">Start another STACK!</button>
+                <button onclick="next(this)">Start next discussion!</button>
+            </div>
+            <div class="horizontal">
+                <h2>Attendees</h2>
+                <ul id="attendees">
+                </ul>
+            </div>
+        </div>
+        <script src="/static/client.js"></script>
     </body>
 </html>

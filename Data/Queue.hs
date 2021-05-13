@@ -1,3 +1,5 @@
+{-# Language DerivingVia #-}
+{-# Language StandaloneDeriving #-}
 module Data.Queue
   (
     Queue
@@ -10,6 +12,7 @@ import           Data.Sequence (Seq)
 import qualified Data.Sequence as Seq
 
 newtype Queue a = Q (Seq a) deriving (Eq, Ord, Read, Show)
+deriving via Seq instance Foldable Queue
 
 empty :: Queue a
 empty = Q Seq.empty

@@ -9,10 +9,14 @@ input[type=text] {
     width: 70%;
     display: block;
 }
-
+.centerer {
+    text-align: center;
+}
 .horizontal {
-    width: 40%;
     display: inline-block;
     height: 100%;
+    margin: auto;
+    text-align: left;
     vertical-align: top;
+    width: 33%;
 }

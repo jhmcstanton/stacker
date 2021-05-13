@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric  #-}
 {-# LANGUAGE NamedFieldPuns #-}
 module Data.Types
   (
@@ -6,6 +7,11 @@ module Data.Types
   , RoomState'(..)
   , RoomState
   , SpeakReq
+  , UserID(..)
+  , StackType(..)
+  -- , Action(..)
+  , Payload(..)
+  -- , Proto(..)
   , clear
   , clearGlobal
   , clearLocal
@@ -14,28 +20,52 @@ module Data.Types
   , qLocal
   , deleteUser
   , newUser
+  , uuidToText
+  , textToUUID
+  , textToRoomID
+  , roomIDToText
+  , unRoomID
   ) where
 import           Protolude             hiding (Text, empty, local)
+import           Data.Aeson
 import           Data.Set       (Set)
 import qualified Data.Set       as Set
 import           Data.Text.Lazy (Text)
+import qualified Data.Text.Lazy as Text
 import           Data.UUID      (UUID)
+import qualified Data.UUID      as UUID
+import           GHC.Generics
 
 import           Data.Queue as Q
 
-newtype RoomID   = RoomID { unRoomID :: UUID } deriving (Eq, Ord, Read, Show)
-newtype UserID   = UserID { unUserID :: Text } deriving (Eq, Ord, Read, Show)
+newtype RoomID   = RoomID UUID deriving (Eq, Generic, Ord, Read, Show)
+newtype UserID   = UserID Text deriving (Eq, Generic, Ord, Read, Show)
+
+unRoomID :: RoomID -> UUID
+unRoomID (RoomID u) = u
+
+uuidToText :: UUID -> Text
+uuidToText = Text.fromStrict . UUID.toText
+
+textToUUID :: Text -> Maybe UUID
+textToUUID = UUID.fromText . Text.toStrict
+
+textToRoomID :: Text -> Maybe RoomID
+textToRoomID = fmap RoomID . textToUUID
+
+roomIDToText :: RoomID -> Text
+roomIDToText = uuidToText . unRoomID
 
 type SpeakReq = UserID
 type RoomName = Text
 
 data RoomState' a = RoomState {
-    roomID   :: RoomID,
-    roomName :: RoomName,
-    users    :: Set UserID,
-    global   :: Queue a,
-    local    :: Queue a
-  } deriving (Eq, Ord, Read, Show)
+    roomID    :: RoomID,
+    roomName  :: RoomName,
+    users     :: Set UserID,
+    rglobal   :: Queue a,
+    rlocal    :: Queue a
+  } deriving (Eq, Generic, Ord, Read, Show)
 
 type RoomState = RoomState' SpeakReq
 
@@ -64,7 +94,38 @@ clear :: RoomState' a -> RoomState' a
 clear = clearGlobal . clearLocal
 
 ql :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
-ql queueFunc roomState@RoomState{local} = roomState{local=queueFunc local}
+ql queueFunc roomState@RoomState{rlocal} = roomState{rlocal=queueFunc rlocal}
 
 qg :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
-qg queueFunc roomState@RoomState{global} = roomState{global=queueFunc global}
+qg queueFunc roomState@RoomState{rglobal} = roomState{rglobal=queueFunc rglobal}
+
+data StackType   = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
+-- data Action      = QUEUE | NEXT | UPDATE_ATTENDEES | INIT
+--                    deriving (Eq, Generic, Ord, Read, Show)
+
+data Payload =
+  QUEUE { stack :: StackType, attendee :: UserID                      } |
+  NEXT { stack :: StackType                                           } |
+  UPDATE_ATTENDEES { attendees :: [UserID]                            } |
+  WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID] } |
+  ClientInit { attendee :: UserID, room :: RoomID                     }
+  deriving (Eq, Generic, Ord, Read, Show)
+
+
+-- data Proto   = Proto { action :: Action, payload :: Payload }
+--                deriving (Eq, Generic, Ord, Read, Show)
+
+instance FromJSON UserID
+instance ToJSON   UserID
+instance FromJSON RoomID
+instance ToJSON   RoomID
+instance FromJSON StackType
+instance ToJSON   StackType
+-- instance FromJSON Action
+-- instance ToJSON   Action
+instance ToJSON   Payload where
+  toJSON    = genericToJSON    defaultOptions { sumEncoding = TaggedObject "action" "" }
+instance FromJSON Payload where
+  parseJSON = genericParseJSON defaultOptions { sumEncoding = TaggedObject "action" "" }
+-- instance ToJSON   Proto
+-- instance FromJSON Proto

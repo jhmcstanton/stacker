@@ -1,6 +1,8 @@
-import           Protolude                            hiding (Text)
+{-# LANGUAGE NamedFieldPuns #-}
+import           Protolude                            hiding (Text, local)
 import           Protolude.Error
 
+import           Data.Aeson
 import           Data.Cache.LRU.IO                    (AtomicLRU)
 import qualified Data.Cache.LRU.IO                    as Cache
 import           Data.UUID                            (UUID)
@@ -8,6 +10,7 @@ import qualified Data.UUID                            as UUID
 import qualified Data.UUID.V4                         as UUID
 import           Data.Sequence                        (Seq)
 import qualified Data.Sequence                        as Seq
+import qualified Data.Set                             as Set
 import qualified Data.Text                            as StrictText
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as Text
@@ -76,7 +79,7 @@ scottyApp cache =
       Sc.file "room.html"
     -- TODO: setup some static middleware
     Sc.get "/static/client.js" $
-      Sc.file "client.js"
+      Sc.file "static/client.js"
     Sc.get "/static/style.css" $
       Sc.file "static/style.css"
 
@@ -84,14 +87,33 @@ websockApp :: RoomCache -> WS.ServerApp
 websockApp cache pending = do
   putText "ws connected"
   conn <- WS.acceptRequest pending
-  WS.forkPingThread conn 30
+  WS.forkPingThread conn 30 -- TODO: remove this deprecated dill
 
-  (msg :: Text) <- WS.receiveData conn
-  WS.sendTextData conn $ ("initial> " :: Text) <> msg
+  roomidReq <- WS.receiveData conn
+  putLByteString roomidReq
+  let deletethis (Just x) = x
+  putLByteString .  encode $ ClientInit (UserID "TestUser") (deletethis $ textToRoomID "82acc0d2-1667-417f-a892-0f9359d11254")
+  case decode roomidReq of
+    Nothing -> WS.sendClose conn ("Bad UUID byyeeeeeeee" :: Text)
+    Just ClientInit{room, attendee} -> do
+      maybeRoom <- Cache.lookup room cache
+      case maybeRoom of
+        Nothing       -> WS.sendClose conn ("byyyyyyyeeeee" :: Text)
+        Just initRoom -> do
+          let initRoom' = newUser attendee initRoom
+          Cache.insert room initRoom cache
+          let currentState = WORLD {
+                attendees = Set.toList (users initRoom'),
+                local     = toList (rlocal  initRoom'),
+                broad     = toList (rglobal initRoom')
+                }
+          WS.sendTextData conn . encode $ currentState
 
-  forever $ do
-    WS.sendTextData conn $ ("loop data" :: Text)
-    threadDelay $ 1 * 1000000
+          forever $ do
+            WS.sendTextData conn $ ("loop data" :: Text)
+            threadDelay $ 1 * 1000000
+
+    Just _ -> WS.sendClose conn ("Bad payload byyyeee" :: Text)
 
 mkRoomPost :: [Sc.Param] -> Maybe RoomPost
 mkRoomPost params = maybeJoin <|> maybeCreate
@@ -121,15 +143,6 @@ createRoom req cache = do
 
 getUsername :: RoomID -> Sc.ActionM (Maybe Text)
 getUsername (RoomID rid) = (fmap . fmap) Text.fromStrict $ Sc.getCookie (userCookie rid)
-
-uuidToText :: UUID -> Text
-uuidToText = Text.fromStrict . UUID.toText
-
-textToUUID :: Text -> Maybe UUID
-textToUUID = UUID.fromText . Text.toStrict
-
-roomIDToText :: RoomID -> Text
-roomIDToText = uuidToText . unRoomID
 
 param :: Text -> [Sc.Param] -> Maybe Text
 param var = fmap snd . find (\(par, _) -> par == var)

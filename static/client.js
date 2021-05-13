@@ -1,21 +1,88 @@
-function webSocketTest()
-{
-    var ws = new WebSocket("ws://localhost:80");
+var debug = false;
+const debugLog = function(msg) {
+    if(debug) console.log(msg);
+};
 
-    ws.onopen = () => {
-        ws.send("initial from js");
-    };
+const roomid   = location.pathname.split('/')[2];
+const username = document.cookie.split("; ")
+      .find(cookie => cookie.startsWith(`username-${roomid}`))
+      .split('=')[1];
+document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
 
-    ws.onmessage = evt => {
-        var m = evt.data;
-        console.log( m );
-    };
 
-    ws.onclose = function() {
-        alert("ws closed");
-    };
+const ws = new WebSocket(`ws://${location.host}${location.pathname}:80`);
 
-    window.onbeforeunload = evt => {
-        socket.close();
+ws.onopen = () => {
+    const initMsg = { action: "ClientInit", room: roomid, attendee: username};
+    ws.send(JSON.stringify(initMsg));
+};
+
+ws.onclose = function(m) {
+    console.log(`Connection close reason: ${m.reason}`);
+    alert("connection closed");
+};
+
+window.onbeforeunload = evt => {
+    ws.close();
+};
+
+const LOCALSTACK = 'LOCAL';
+const BROADSTACK = 'BROAD';
+const protocol = function(action) {
+    return (el) => {
+        const stacktype = el.parentElement.id;
+        const msg = { action: action, stack: stacktype };
+        debugLog(`From protocol: [msg]`);
+        ws.send(JSON.stringify(msg));
     };
-}
+};
+const QUEUE_ACT     = 'QUEUE';
+const NEXT_ACT      = 'NEXT';
+const ATTENDEES_ACT = 'UPDATE_ATTENDEES';
+const q    = protocol(QUEUE_ACT);
+const next = protocol(NEXT_ACT);
+
+const appendQueue = function(stacktype, newItem) {
+    const stackel = document.getElementById(`${stacktype}-discussion`);
+    const newli   = document.createElement('li');
+    newli.appendChild(document.createTextNode(newItem));
+    stackel.appendChild(newli);
+};
+
+const popQueue = function(stacktype) {
+    const stackel = document.getElementById(`${stacktype}-discussion`);
+    stackel.removeChild(stackel.childNodes[0]);
+};
+
+const updateAttendees = function(attendees) {
+    const attendeesel = document.getElementById('attendees');
+    attendeesel.innerHTML = '';
+    attendees.forEach(attendee => {
+        const li = document.createElement('li');
+        li.appendChild(document.createTextNode(attendee));
+        attendeesel.appendChild(li);
+    });
+};
+
+
+ws.onmessage = evt => {
+    const m = JSON.parse(evt.data);
+    debugLog(m);
+
+    const payload = m['payload'];
+    switch (m['action']) {
+    case QUEUE_ACT:
+        debugLog('Appending to stack');
+        appendQueue(payload['stack'], payload['attendee']);
+        break;
+    case NEXT_ACT:
+        debugLog('Popping stack');
+        popQueue(payload['stack']);
+        break;
+    case ATTENDEES_ACT:
+        debugLog('Updating attendees');
+        updateAttendees(payload['attendees']);
+    default:
+        console.log(`Unknown action: [${m}]`);
+    }
+};
