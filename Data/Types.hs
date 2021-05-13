@@ -9,9 +9,6 @@ module Data.Types
   , SpeakReq
   , StackType(..)
   , Payload(..)
-  , clear
-  , clearGlobal
-  , clearLocal
   , newRoom
   , qGlobal
   , qLocal
@@ -87,15 +84,6 @@ nextLocal = ql next
 
 nextGlobal :: RoomState' a -> RoomState' a
 nextGlobal = qg next
-
-clearLocal :: RoomState' a -> RoomState' a
-clearLocal = ql (const empty)
-
-clearGlobal :: RoomState' a -> RoomState' a
-clearGlobal = qg (const empty)
-
-clear :: RoomState' a -> RoomState' a
-clear = clearGlobal . clearLocal
 
 ql :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
 ql queueFunc roomState@RoomState{rlocal} = roomState{rlocal=queueFunc rlocal}
