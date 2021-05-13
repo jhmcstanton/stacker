@@ -9,8 +9,13 @@ const username = document.cookie.split("; ")
       .split('=')[1];
 document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
 
-
-const ws = new WebSocket(`ws://${location.host}${location.pathname}:80`);
+let scheme = "wss";
+let port   = 443;
+if (location.protocol === 'http:') {
+    scheme = "ws";
+    port   = 80;
+}
+const ws = new WebSocket(`${scheme}://${location.host}${location.pathname}:${port}`);
 
 ws.onclose = function(m) {
     console.log(`Connection close reason: ${m.reason}`);
