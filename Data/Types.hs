@@ -74,8 +74,12 @@ nilRoom = newRoom (RoomID UUID.nil) ""
 newUser :: UserID -> RoomState' a -> RoomState' a
 newUser user roomState@RoomState{users}    = roomState{users = Set.insert user users}
 
-deleteUser :: UserID -> RoomState' a -> RoomState' a
-deleteUser user roomState@RoomState{users} = roomState{users = Set.delete user users}
+deleteUser :: UserID -> RoomState -> RoomState
+deleteUser user roomState@RoomState{users, rglobal, rlocal} = roomState{
+    users = Set.delete user users,
+    rglobal = Q.remove user rglobal,
+    rlocal  = Q.remove user rlocal
+  }
 
 qLocal :: a -> RoomState' a -> RoomState' a
 qLocal req = ql (|> req)

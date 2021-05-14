@@ -5,6 +5,7 @@ module Data.Queue
     Queue
   , empty
   , next
+  , remove
   , (|>)
   ) where
 import           Protolude            hiding (empty, on)
@@ -21,6 +22,9 @@ q |> x = on (Seq.|> x) q
 
 next :: Queue a -> Queue a
 next = on (Seq.drop 1)
+
+remove :: Eq a => a -> Queue a -> Queue a
+remove el = on (Seq.filter (/= el))
 
 on :: (Seq a -> Seq a) -> Queue a -> Queue a
 on f (Q s) = Q $ f s
