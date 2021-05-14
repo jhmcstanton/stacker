@@ -4,9 +4,9 @@ const debugLog = function(msg) {
 };
 
 const roomid   = location.pathname.split('/')[2];
-const username = document.cookie.split("; ")
-      .find(cookie => cookie.startsWith(`username-${roomid}`))
-      .split('=')[1];
+const roomCookie = document.cookie.split("; ")
+      .find(cookie => cookie.startsWith(`username-${roomid}`));
+const username = roomCookie.split('=')[1];
 document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
 
 let scheme = "wss";
@@ -116,4 +116,16 @@ ws.onmessage = evt => {
 ws.onopen = () => {
     const initMsg = { action: "ClientInit", room: roomid, attendee: username};
     ws.send(JSON.stringify(initMsg));
+};
+
+
+const leaveRoom = function() {
+    const leaveMsg = { action: "LEAVE" };
+    ws.send(JSON.stringify(leaveMsg));
+    ws.close();
+    window.location = `/?room=${roomid}`;
+};
+
+const closeRoom = function() {
+    console.log('Implement me');
 };

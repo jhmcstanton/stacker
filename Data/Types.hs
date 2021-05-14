@@ -96,6 +96,7 @@ data StackType   = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
 data Payload =
   QUEUE { stack :: StackType                                                        } |
   NEXT { stack :: StackType                                                         } |
+  LEAVE                                                                               |
   WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |
   ClientInit { attendee :: UserID, room :: RoomID                                   }
   deriving (Eq, Generic, Ord, Read, Show)
