@@ -10,6 +10,7 @@ module Data.Types
   , StackType(..)
   , Payload(..)
   , newRoom
+  , nilRoom
   , qGlobal
   , qLocal
   , deleteUser
@@ -66,6 +67,9 @@ type RoomState = RoomState' SpeakReq
 
 newRoom :: RoomID -> RoomName -> RoomState' a
 newRoom rid rname = RoomState rid rname Set.empty Q.empty Q.empty
+
+nilRoom :: RoomState' a
+nilRoom = newRoom (RoomID UUID.nil) ""
 
 newUser :: UserID -> RoomState' a -> RoomState' a
 newUser user roomState@RoomState{users}    = roomState{users = Set.insert user users}

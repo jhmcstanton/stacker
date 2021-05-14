@@ -89,6 +89,7 @@ websockApp cache pending = do
         Just initRoom -> do
           let initRoom' = newUser attendee initRoom
           Cache.insert room initRoom' cache
+          _ <- pushWorld room conn cache nilRoom
 
           _ <- createReader attendee room conn cache
           -- this intentionally uses initRoom instead of initRoom'
