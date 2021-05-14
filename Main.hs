@@ -168,6 +168,9 @@ createReader attendee rid conn cache = forkIO . forever $ do
           let room' = deleteUser attendee room
           Cache.insert rid room' cache
           WS.sendClose conn ("Thanks for joining!" :: Text)
+        Just CLOSE       -> do
+          _ <- Cache.delete rid cache
+          WS.sendClose conn ("Thanks for joining!" :: Text)
         _       -> WS.sendClose conn ("Unsupported byyyyeee" :: Text)
 
 iterate_ :: Monad f => a -> (a -> f a) -> f a

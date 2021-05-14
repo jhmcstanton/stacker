@@ -19,7 +19,8 @@ const ws = new WebSocket(`${scheme}://${location.host}${location.pathname}:${por
 
 ws.onclose = function(m) {
     console.log(`Connection close reason: ${m.reason}`);
-    alert("connection closed");
+    alert("This room is now closed");
+    window.location = '/';
 };
 
 window.onbeforeunload = evt => {
@@ -127,5 +128,9 @@ const leaveRoom = function() {
 };
 
 const closeRoom = function() {
-    console.log('Implement me');
+    if(confirm("Are you sure? This will close the room for everyone!")) {
+        const closeMsg = { action: "CLOSE" };
+        ws.send(JSON.stringify(closeMsg));
+        window.location = '/';
+    }
 };
