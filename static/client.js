@@ -3,9 +3,10 @@ const debugLog = function(msg) {
     if(debug) console.log(msg);
 };
 
-const roomid   = location.pathname.split('/')[2];
+const roomid     = location.pathname.split('/')[2];
+const cookieName = `username-${roomid}`;
 const roomCookie = document.cookie.split("; ")
-      .find(cookie => cookie.startsWith(`username-${roomid}`));
+      .find(cookie => cookie.startsWith(cookieName));
 const username = roomCookie.split('=')[1];
 document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
 
@@ -119,11 +120,16 @@ ws.onopen = () => {
     ws.send(JSON.stringify(initMsg));
 };
 
+const deleteCookie = function() {
+    document.cookie = `${cookieName}=NA; expires=Fri, 14 May 2021 00:00:00 UTC; path=/`;
+};
+
 
 const leaveRoom = function() {
     const leaveMsg = { action: "LEAVE" };
     ws.send(JSON.stringify(leaveMsg));
     ws.close();
+    deleteCookie();
     window.location = `/?room=${roomid}`;
 };
 
@@ -131,6 +137,7 @@ const closeRoom = function() {
     if(confirm("Are you sure? This will close the room for everyone!")) {
         const closeMsg = { action: "CLOSE" };
         ws.send(JSON.stringify(closeMsg));
+        deleteCookie();
         window.location = '/';
     }
 };

@@ -17,6 +17,8 @@ module Data.Types
   , newUser
   , nextLocal
   , nextGlobal
+  , lengthLocal
+  , peakNextGlobal
   , uuidToText
   , textToUUID
   , textToRoomID
@@ -92,6 +94,12 @@ nextLocal = ql next
 
 nextGlobal :: RoomState' a -> RoomState' a
 nextGlobal = qg next
+
+lengthLocal :: RoomState' a -> Int
+lengthLocal = Q.depth . rlocal
+
+peakNextGlobal :: RoomState' a -> Maybe a
+peakNextGlobal = Q.peak . rglobal
 
 ql :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
 ql queueFunc roomState@RoomState{rlocal} = roomState{rlocal=queueFunc rlocal}

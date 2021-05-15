@@ -147,7 +147,7 @@ pushWorld rid conn cache prevState = do
 
 createReader :: UserID -> RoomID -> WS.Connection -> RoomCache -> IO ThreadId
 createReader attendee rid conn cache = forkIO . forever $ do
-  msg <- WS.receiveData conn
+  msg       <- WS.receiveData conn
   maybeRoom <- Cache.lookup rid cache
   case maybeRoom of
     Nothing       -> WS.sendClose conn ("Room is closed byyyyee" :: Text)
@@ -160,10 +160,16 @@ createReader attendee rid conn cache = forkIO . forever $ do
                            _     -> qGlobal) attendee room
             Cache.insert rid room' cache
         Just NEXT{stack} -> do
-            let room' = (case stack of
-                            LOCAL -> nextLocal
-                            _     -> nextGlobal) room
-            Cache.insert rid room' cache
+          case stack of
+            LOCAL -> Cache.insert rid (nextLocal room) cache
+            BROAD ->
+              if lengthLocal room > 1
+              then pure () -- Do nothing, don't delete an incomplete local stack
+              else case peakNextGlobal room of
+                     Nothing        -> pure () -- Nothing in global to mess with
+                     Just nextSpeaker -> do
+                       let room' = qLocal nextSpeaker . nextLocal . nextGlobal $ room
+                       Cache.insert rid room' cache
         Just LEAVE       -> do
           let room' = deleteUser attendee room
           Cache.insert rid room' cache
