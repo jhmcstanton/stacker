@@ -30,9 +30,34 @@ meetings.
 
 Check out an instance of the free tier at at https://chat-stacker.herokuapp.com
 
+## Docker
+
+### Build
+
+Build this image in the usual way:
+
+```
+docker build . -t stacker:<tag name>
+```
+
+### Run
+
+Run the image with:
+
+```
+docker run --rm --name stacker -p 80:80 stacker:<tag name>
+```
+
+Note, if your hosting provider expects a specific port or host you can assign it
+with:
+
+```
+docker run -e PORT=<new port> -e HOST=<new host> --rm ...  
+```
+
 ## TODO
 
-- Dockerize
+- ~Dockerize~
 - Add support for stacking on behalf of other attendees
 - Add progressive stack / method to move people around the stack
 - Add speak counter to attendees

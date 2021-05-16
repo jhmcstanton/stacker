@@ -9,9 +9,11 @@ import           Data.UUID                            (UUID)
 import qualified Data.UUID                            as UUID
 import qualified Data.UUID.V4                         as UUID
 import qualified Data.Set                             as Set
+import           Data.String                          (fromString)
 import qualified Data.Text                            as StrictText
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as Text
+import           GHC.Base                             (String)
 import qualified Network.HTTP.Types.Status            as Sc
 import qualified Network.Wai.Middleware.Gzip          as Sc
 import qualified Network.Wai.Handler.WebSockets       as WaiWs
@@ -36,11 +38,9 @@ userCookie rid = "username-" <> (UUID.toText rid)
 
 main :: IO ()
 main = do
-  envport <- Sys.lookupEnv "PORT"
-  let port = case envport of
-        Nothing -> 80
-        Just p  -> read p
-  let settings = Warp.setPort port Warp.defaultSettings
+  port <- sysWithDefault "PORT" read 80
+  host <- sysWithDefault "HOST" fromString "*4"
+  let settings = Warp.setHost host $ Warp.setPort port Warp.defaultSettings
   cache <- Cache.newAtomicLRU Nothing
   sapp  <- scottyApp cache
   let wsapp = websockApp cache
@@ -181,3 +181,6 @@ createReader attendee rid conn cache = forkIO . forever $ do
 
 iterate_ :: Monad f => a -> (a -> f a) -> f a
 iterate_ a f = f a >>= \a' -> iterate_ a' f
+
+sysWithDefault :: String -> (String -> a) -> a -> IO a
+sysWithDefault var f x = fmap (fromMaybe x . fmap f) $ Sys.lookupEnv var
