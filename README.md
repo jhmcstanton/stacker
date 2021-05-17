@@ -37,3 +37,4 @@ Check out an instance of the free tier at at https://chat-stacker.herokuapp.com
 - Add progressive stack / method to move people around the stack
 - Add speak counter to attendees
 - Prettify UI
+- Consider separating the websocket app from the http app
