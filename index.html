@@ -9,7 +9,7 @@
         <h1>Stacker</h1>
         <div class="centerer">
         <div class="horizontal">
-            <form name="create-room" action="/" method="POST">
+            <form name="create-room" action="/" method="POST" onsubmit="return verifyform(this)">
                 <h2>Create a Room</h2>
                 <label for="room-name">Room Name</label>
                 <input type="text" name="room-name">
@@ -20,8 +20,8 @@
         </div>
         <div class="horizontal">
             <!-- TODO: Consider making this just go straight to /room/:id unless
-            the password is readded? -->
-            <form name="join" action="/" method="POST">
+                 the password is readded? -->
+            <form name="join" action="/" method="POST" onsubmit="return verifyform(this)">
                 <h2>Join a Room</h2>
                 <label for="room-id">Room ID</label>
                 <input type="text" name="room-id" id="room-id">

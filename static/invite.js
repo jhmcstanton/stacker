@@ -1,11 +1,12 @@
-const maybeRoomID = new URLSearchParams(location.search).get('room');
-
-if (maybeRoomID) {
-    document.getElementById('room-id').value = maybeRoomID;
-}
-if (roomid) {
-    const shareurl = `http://${location.host}?room=${roomid}`;
-    document.getElementById('copylink').innerHTML = shareurl;
+const verifyform = function(form) {
+    let valid = true;
+    Array.from(form.elements).forEach(el => {
+        if (el.type === 'text' && !el.value) {
+            alert(`${el.name} must be provided`);
+            valid = false;
+        }
+    });
+    return valid;
 };
 
 const copier = function(){
@@ -18,4 +19,14 @@ const copier = function(){
     document.execCommand('copy');
     document.body.removeChild(el);
     alert('Copied the link!');
+};
+
+const maybeRoomID = new URLSearchParams(location.search).get('room');
+
+if (maybeRoomID) {
+    document.getElementById('room-id').value = maybeRoomID;
+}
+if (typeof roomid !== 'undefined') {
+    const shareurl = `http://${location.host}?room=${roomid}`;
+    document.getElementById('copylink').innerHTML = shareurl;
 };

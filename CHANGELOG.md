@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - More docs
 - Dockerized
 - Supports stacking for others
+### Fix
+- Added client-side form validation to disallow blank room or user names
 
 ## [0.3.0] - 2021.05.14
 ### Added
