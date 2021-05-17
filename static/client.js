@@ -30,20 +30,26 @@ window.onbeforeunload = evt => {
 
 const LOCALSTACK = 'LOCAL';
 const BROADSTACK = 'BROAD';
-const protocol = function(action) {
+const protocol = function(action, extra = {}) {
     return (el) => {
         const stacktype = el.parentElement.id;
-        const msg = { action: action, stack: stacktype };
+        const msg = Object.assign(extra, { action: action, stack: stacktype });
         debugLog(`From protocol: [${JSON.stringify(msg)}]`);
         ws.send(JSON.stringify(msg));
     };
 };
 const QUEUE_ACT     = 'QUEUE';
 const NEXT_ACT      = 'NEXT';
+const QOTHER_ACT    = 'QOTHER';
 const ATTENDEES_ACT = 'UPDATE_ATTENDEES';
 const UPDATE_WORLD  = 'WORLD';
-const q    = protocol(QUEUE_ACT);
-const next = protocol(NEXT_ACT);
+const q      = protocol(QUEUE_ACT);
+const next   = protocol(NEXT_ACT);
+const qother = function(el) {
+    const selID    = `${el.parentElement.id.toLowerCase()}-stack-other`;
+    const attendee = document.getElementById(selID).value;
+    protocol(QOTHER_ACT, {other: attendee})(el);
+};
 
 const appendQueue = function(stacktype, newItem) {
     const stackel = document.getElementById(`${stacktype}-discussion`);
@@ -59,11 +65,26 @@ const popQueue = function(stacktype) {
 
 const updateAttendees = function(attendees) {
     const attendeesel = document.getElementById('attendees');
+    const selectl     = document.getElementById('local-stack-other');
+    const selectb     = document.getElementById('broad-stack-other');
     attendeesel.innerHTML = '';
+    selectl.innerHTML     = '';
+    selectb.innerHTML     = '';
     attendees.forEach(attendee => {
         const li = document.createElement('li');
         li.appendChild(document.createTextNode(attendee));
         attendeesel.appendChild(li);
+        // These fill in drop downs of only other attendees
+        if (attendee !== username) {
+            const localopt = document.createElement('option');
+            localopt.value = attendee;
+            localopt.appendChild(document.createTextNode(attendee));
+            selectl.appendChild(localopt);
+            const broadopt = document.createElement('option');
+            broadopt.value = attendee;
+            broadopt.appendChild(document.createTextNode(attendee));
+            selectb.appendChild(broadopt);
+        }
     });
 };
 

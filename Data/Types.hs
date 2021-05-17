@@ -13,6 +13,7 @@ module Data.Types
   , nilRoom
   , qGlobal
   , qLocal
+  , q
   , deleteUser
   , newUser
   , nextLocal
@@ -89,6 +90,9 @@ qLocal req = ql (|> req)
 qGlobal :: a -> RoomState' a -> RoomState' a
 qGlobal req = qg (|> req)
 
+q :: StackType -> a -> RoomState' a -> RoomState' a
+q = stackToFunc qLocal qGlobal
+
 nextLocal :: RoomState' a -> RoomState' a
 nextLocal = ql next
 
@@ -107,11 +111,16 @@ ql queueFunc roomState@RoomState{rlocal} = roomState{rlocal=queueFunc rlocal}
 qg :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
 qg queueFunc roomState@RoomState{rglobal} = roomState{rglobal=queueFunc rglobal}
 
-data StackType   = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
+stackToFunc :: (a -> b) -> (a -> b) -> StackType -> (a -> b)
+stackToFunc local _ LOCAL = local
+stackToFunc _ broad BROAD = broad
+
+data StackType = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
 
 data Payload =
-  QUEUE { stack :: StackType                                                        } |
-  NEXT { stack :: StackType                                                         } |
+  QUEUE  { stack :: StackType                                                       } |
+  QOTHER { stack :: StackType, other :: UserID                                      } |
+  NEXT   { stack :: StackType                                                       } |
   LEAVE                                                                               |
   CLOSE                                                                               |
   WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |

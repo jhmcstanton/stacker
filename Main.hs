@@ -155,9 +155,10 @@ createReader attendee rid conn cache = forkIO . forever $ do
       case decode msg of
         Nothing -> WS.sendClose conn ("Bad UUID byyeeeeeeee" :: Text)
         Just QUEUE{stack} -> do
-            let room' = (case stack of
-                           LOCAL -> qLocal
-                           _     -> qGlobal) attendee room
+            let room' = q stack attendee room
+            Cache.insert rid room' cache
+        Just QOTHER{stack, other} -> do
+            let room' = q stack other room
             Cache.insert rid room' cache
         Just NEXT{stack} -> do
           case stack of

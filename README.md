@@ -58,7 +58,7 @@ docker run -e PORT=<new port> -e HOST=<new host> --rm ...
 ## TODO
 
 - ~Dockerize~
-- Add support for stacking on behalf of other attendees
+- ~Add support for stacking on behalf of other attendees~
 - Add progressive stack / method to move people around the stack
 - Add speak counter to attendees
 - Prettify UI
