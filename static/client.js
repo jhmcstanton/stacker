@@ -8,7 +8,7 @@ const cookieName = `username-${roomid}`;
 const roomCookie = document.cookie.split("; ")
       .find(cookie => cookie.startsWith(cookieName));
 var username = roomCookie.split('=')[1];
-const attendees   = [];
+const attendees   = {};
 const localStack  = [];
 const globalStack = [];
 
@@ -90,10 +90,16 @@ const updateAttendees = function(attendees) {
     attendeesel.innerHTML = '';
     selectl.innerHTML     = '';
     selectb.innerHTML     = '';
-    attendees.forEach(attendee => {
-        const li = document.createElement('li');
-        li.appendChild(document.createTextNode(attendee));
-        attendeesel.appendChild(li);
+    for(const [attendee, count] of Object.entries(attendees)) {
+        console.log(attendee, count);
+        const row = document.createElement('tr');
+        const attendeeEl = document.createElement('td');
+        attendeeEl.appendChild(document.createTextNode(attendee));
+        row.appendChild(attendeeEl);
+        const countEl = document.createElement('td');
+        countEl.appendChild(document.createTextNode(count));
+        row.appendChild(countEl);
+        attendeesel.appendChild(row);
         // These fill in drop downs of only other attendees
         if (attendee !== username) {
             const localopt = document.createElement('option');
@@ -105,7 +111,7 @@ const updateAttendees = function(attendees) {
             broadopt.appendChild(document.createTextNode(attendee));
             selectb.appendChild(broadopt);
         }
-    });
+    };
 };
 
 const newQueue = function(stacktype, items) {
@@ -144,8 +150,20 @@ const copyArray = function(xs, ys) {
     ys.forEach(x => xs.push(x));
 };
 
+const copyObj = function(xs, ys) {
+    Object.keys(ys).forEach(k => {
+        xs[k] = ys[k];
+    });
+    Object.keys(xs).forEach(k => {
+        if (!ys.hasOwnProperty(k)) {
+            delete xs[k];
+        }
+    });
+};
+
 const updateWorld = function(msg) {
-    copyArray(attendees, msg['attendees']);
+    console.log(msg);
+    copyObj(attendees, msg['attendeeToCount']);
     copyArray(localStack, msg['local']);
     copyArray(globalStack, msg['broad']);
     updateAttendees(attendees);

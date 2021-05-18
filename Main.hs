@@ -8,7 +8,6 @@ import qualified Data.Cache.LRU.IO                    as Cache
 import           Data.UUID                            (UUID)
 import qualified Data.UUID                            as UUID
 import qualified Data.UUID.V4                         as UUID
-import qualified Data.Set                             as Set
 import           Data.String                          (fromString)
 import qualified Data.Text                            as StrictText
 import           Data.Text.Lazy                       (Text)
@@ -149,10 +148,10 @@ pushWorld rid conn cache prevState = do
     Nothing   -> WS.sendClose conn ("byyyyyyyeeeee" :: Text) >> pure prevState
     Just room -> do
       when (room /= prevState) $ WS.sendTextData conn . encode $ WORLD {
-        attendees = Set.toList (users room),
-        local     = toList (rlocal  room),
-        broad     = toList (rglobal room),
-        name      = roomName room
+        attendeeToCount = users room,
+        local           = toList (rlocal  room),
+        broad           = toList (rglobal room),
+        name            = roomName room
       }
       pure room
 

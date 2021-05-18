@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveGeneric  #-}
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE NamedFieldPuns      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Data.Types
   (
@@ -30,16 +30,17 @@ module Data.Types
   , roomIDToText
   , unRoomID
   ) where
-import           Protolude              hiding (Text, empty, local, sort)
+import           Protolude                   hiding (Text, empty, local, sort)
 import           Data.Aeson
-import qualified Data.Set        as Set
-import           Data.Text.Lazy  (Text)
-import qualified Data.Text.Lazy  as Text
-import           Data.UUID       (UUID)
-import qualified Data.UUID       as UUID
-import           GHC.Generics    ()
+import           Data.Aeson.Encoding (lazyText)
+import qualified Data.Map.Strict     as Map
+import           Data.Text.Lazy      (Text)
+import qualified Data.Text.Lazy      as Text
+import           Data.UUID           (UUID)
+import qualified Data.UUID           as UUID
+import           GHC.Generics        ()
 
-import           Data.Queue as Q
+import           Data.Queue          as Q
 
 newtype RoomID   = RoomID UUID deriving (Eq, Generic, Ord, Read, Show)
 newtype UserID   = UserID Text deriving (Eq, Generic, Ord, Read, Show)
@@ -65,7 +66,7 @@ type RoomName = Text
 data RoomState' a = RoomState {
     roomID    :: RoomID,
     roomName  :: RoomName,
-    users     :: Set UserID,
+    users     :: Map UserID Int,
     rglobal   :: Queue a,
     rlocal    :: Queue a
   } deriving (Eq, Generic, Ord, Read, Show)
@@ -73,10 +74,10 @@ data RoomState' a = RoomState {
 type RoomState = RoomState' SpeakReq
 
 userList :: RoomState' a -> [UserID]
-userList = Set.toList . users
+userList = Map.keys . users
 
 newRoom :: RoomID -> RoomName -> RoomState' a
-newRoom rid rname = RoomState rid rname Set.empty Q.empty Q.empty
+newRoom rid rname = RoomState rid rname Map.empty Q.empty Q.empty
 
 nilRoom :: RoomState' a
 nilRoom = newRoom (RoomID UUID.nil) ""
@@ -84,13 +85,13 @@ nilRoom = newRoom (RoomID UUID.nil) ""
 -- Returns Nothing when username is taken
 newUser :: UserID -> RoomState' a -> Maybe (RoomState' a)
 newUser user roomState@RoomState{users} =
-  if Set.member user users
+  if Map.member user users
   then Nothing
-  else Just roomState{users = Set.insert user users}
+  else Just roomState{users = Map.insert user 0 users}
 
 deleteUser :: UserID -> RoomState -> RoomState
 deleteUser user roomState@RoomState{users, rglobal, rlocal} = roomState{
-    users = Set.delete user users,
+    users = Map.delete user users,
     rglobal = Q.remove user rglobal,
     rlocal  = Q.remove user rlocal
   }
@@ -104,8 +105,12 @@ qGlobal req = qg (|> req)
 q :: StackType -> a -> RoomState' a -> RoomState' a
 q = stackToFunc qLocal qGlobal
 
-nextLocal :: RoomState' a -> RoomState' a
-nextLocal = ql next
+nextLocal :: RoomState -> RoomState
+-- nextLocal = ql next where
+nextLocal rstate@RoomState{rlocal, users} = rstate{rlocal=next rlocal, users=users'} where
+  users' = case Q.peak rlocal of
+             Nothing -> users
+             Just u  -> Map.adjust (+1) u users
 
 nextGlobal :: RoomState' a -> RoomState' a
 nextGlobal = qg next
@@ -153,26 +158,32 @@ stackToFunc _ broad BROAD = broad
 data StackType = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
 
 data Payload =
-  QUEUE   { stack :: StackType                                                      } |
-  QOTHER  { stack :: StackType, other :: UserID                                     } |
-  NEXT    { stack :: StackType                                                      } |
-  LEAVE                                                                               |
-  CLOSE                                                                               |
-  REORDER { stack :: StackType, newstack :: [UserID]                                } |
-  CANCEL  { stack :: StackType, newstack :: [UserID]                                } |
-  WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |
-  CLIENTINIT { attendee :: UserID, room :: RoomID                                   } |
-  DUPLICATEUSER { attendees :: [UserID]                                             }
+  QUEUE   { stack :: StackType                                 } |
+  QOTHER  { stack :: StackType, other :: UserID                } |
+  NEXT    { stack :: StackType                                 } |
+  LEAVE                                                          |
+  CLOSE                                                          |
+  REORDER { stack :: StackType, newstack :: [UserID]           } |
+  CANCEL  { stack :: StackType, newstack :: [UserID]           } |
+  WORLD { attendeeToCount :: Map UserID Int, local :: [UserID],
+          broad :: [UserID], name :: Text }                      |
+  CLIENTINIT { attendee :: UserID, room :: RoomID              } |
+  DUPLICATEUSER { attendees :: [UserID]                        }
   deriving (Eq, Generic, Ord, Read, Show)
 
 
-instance FromJSON UserID
-instance ToJSON   UserID
-instance FromJSON RoomID
-instance ToJSON   RoomID
-instance FromJSON StackType
-instance ToJSON   StackType
-instance ToJSON   Payload where
+instance FromJSON    UserID
+instance ToJSON      UserID
+instance ToJSONKey   UserID where
+  toJSONKey = ToJSONKeyText f g where
+    f (UserID u) = Text.toStrict u
+    g (UserID u) = lazyText u
+instance FromJSONKey UserID
+instance FromJSON    RoomID
+instance ToJSON      RoomID
+instance FromJSON    StackType
+instance ToJSON      StackType
+instance ToJSON      Payload where
   toJSON    = genericToJSON    defaultOptions { sumEncoding = TaggedObject "action" "" }
 instance FromJSON Payload where
   parseJSON = genericParseJSON defaultOptions { sumEncoding = TaggedObject "action" "" }
