@@ -46,3 +46,12 @@ input[type=text] {
     list-style: none;
     margin: 0px;
 }
+footer {
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+}
+.footer-links > li {
+    display: inline-block;
+    list-style: none;
+}

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dockerized
 - Supports stacking for others
 - Added support for moving position in stack
+- Added links to polciies in footer
 ### Fix
 - Added client-side form validation to disallow blank room or user names
 - Handles duplicate usernames
