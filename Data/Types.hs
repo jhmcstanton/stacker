@@ -22,6 +22,7 @@ module Data.Types
   , lengthLocal
   , reorder
   , peakNextGlobal
+  , userList
   , uuidToText
   , textToUUID
   , textToRoomID
@@ -70,14 +71,21 @@ data RoomState' a = RoomState {
 
 type RoomState = RoomState' SpeakReq
 
+userList :: RoomState' a -> [UserID]
+userList = Set.toList . users
+
 newRoom :: RoomID -> RoomName -> RoomState' a
 newRoom rid rname = RoomState rid rname Set.empty Q.empty Q.empty
 
 nilRoom :: RoomState' a
 nilRoom = newRoom (RoomID UUID.nil) ""
 
-newUser :: UserID -> RoomState' a -> RoomState' a
-newUser user roomState@RoomState{users}    = roomState{users = Set.insert user users}
+-- Returns Nothing when username is taken
+newUser :: UserID -> RoomState' a -> Maybe (RoomState' a)
+newUser user roomState@RoomState{users} =
+  if Set.member user users
+  then Nothing
+  else Just roomState{users = Set.insert user users}
 
 deleteUser :: UserID -> RoomState -> RoomState
 deleteUser user roomState@RoomState{users, rglobal, rlocal} = roomState{
@@ -139,7 +147,8 @@ data Payload =
   CLOSE                                                                               |
   REORDER { stack :: StackType, newstack :: [UserID]                                } |
   WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |
-  ClientInit { attendee :: UserID, room :: RoomID                                   }
+  CLIENTINIT { attendee :: UserID, room :: RoomID                                   } |
+  DUPLICATEUSER { attendees :: [UserID]                                             } 
   deriving (Eq, Generic, Ord, Read, Show)
 
 

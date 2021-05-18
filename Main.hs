@@ -79,28 +79,39 @@ websockApp cache pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30 -- TODO: remove this deprecated dill
 
+  maybeRooms <- joinRoom conn cache
+  case maybeRooms of
+    Nothing -> pure ()
+    Just (initRoom, initRoom', CLIENTINIT{room, attendee}) -> do
+      _ <- Cache.insert room initRoom' cache
+      _ <- pushWorld room conn cache nilRoom
+
+      _ <- createReader attendee room conn cache
+      -- this intentionally uses initRoom instead of initRoom'
+      -- to force the first push of the state of the room
+      _ <- iterate_ initRoom $ \rstate -> do
+        curState <- pushWorld room conn cache rstate
+        threadDelay 100000
+        pure curState
+      pure ()
+    Just _ -> WS.sendClose conn ("Error while joining room" :: Text)
+
+joinRoom :: WS.Connection -> RoomCache -> IO (Maybe (RoomState, RoomState, Payload))
+joinRoom conn cache = do
   roomidReq <- WS.receiveData conn
   case decode roomidReq of
-    Nothing -> WS.sendClose conn ("Bad UUID byyeeeeeeee" :: Text)
-    Just ClientInit{room, attendee} -> do
+    Nothing -> WS.sendClose conn ("Bad UUID byyeeeeeeee" :: Text) >> pure Nothing
+    Just cli@CLIENTINIT{room, attendee} -> do
       maybeRoom <- Cache.lookup room cache
       case maybeRoom of
-        Nothing       -> WS.sendClose conn ("byyyyyyyeeeee" :: Text)
+        Nothing       -> WS.sendClose conn ("byyyyyyyeeeee" :: Text) >> pure Nothing
         Just initRoom -> do
-          let initRoom' = newUser attendee initRoom
-          Cache.insert room initRoom' cache
-          _ <- pushWorld room conn cache nilRoom
-
-          _ <- createReader attendee room conn cache
-          -- this intentionally uses initRoom instead of initRoom'
-          -- to force the first push of the state of the room
-          _ <- iterate_ initRoom $ \rstate -> do
-            curState <- pushWorld room conn cache rstate
-            threadDelay 100000
-            pure curState
-          pure ()
-
-    Just _ -> WS.sendClose conn ("Bad payload byyyeee" :: Text)
+          case newUser attendee initRoom of
+            Just initRoom' -> pure $ pure (initRoom, initRoom', cli)
+            Nothing        -> do
+              _ <- WS.sendTextData conn . encode $ DUPLICATEUSER (userList initRoom)
+              joinRoom conn cache
+    Just _ -> WS.sendClose conn ("Bad payload byyyeee" :: Text) >> pure Nothing
 
 mkRoomPost :: [Sc.Param] -> Maybe RoomPost
 mkRoomPost params = maybeJoin <|> maybeCreate
@@ -167,7 +178,7 @@ createReader attendee rid conn cache = forkIO . forever $ do
               if lengthLocal room > 1
               then pure () -- Do nothing, don't delete an incomplete local stack
               else case peakNextGlobal room of
-                     Nothing        -> pure () -- Nothing in global to mess with
+                     Nothing          -> pure () -- Nothing in global to mess with
                      Just nextSpeaker -> do
                        let room' = qLocal nextSpeaker . nextLocal . nextGlobal $ room
                        Cache.insert rid room' cache

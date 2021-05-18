@@ -7,8 +7,7 @@ const roomid     = location.pathname.split('/')[2];
 const cookieName = `username-${roomid}`;
 const roomCookie = document.cookie.split("; ")
       .find(cookie => cookie.startsWith(cookieName));
-const username = roomCookie.split('=')[1];
-document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
+var username = roomCookie.split('=')[1];
 const attendees   = [];
 const localStack  = [];
 const globalStack = [];
@@ -142,15 +141,38 @@ const updateWorld = function(msg) {
     setRoomName(msg['name']);
 };
 
+const setUserDisplay = function(username) {
+    document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
+};
+
+const initRoom = function() {
+    const initMsg = { action: "CLIENTINIT", room: roomid, attendee: username};
+    debugLog(`Initializing with ${JSON.stringify(initMsg)}`);
+    ws.send(JSON.stringify(initMsg));
+};
+
+const retryUser = function() {
+    debugLog('Retrying user');
+    username = '';
+    while (username === '') {
+        username = prompt("Your username is taken, please provide a new name");
+    }
+    initRoom();
+    const exDate = new Date();
+    exDate.setDate(exDate.getDate() + 1);
+    document.cookie = `${cookieName}=${username}; ${exDate.toUTCString()}; path=/; SameSite=Strict`;
+    setUserDisplay(username);
+};
+
 ws.onmessage = evt => {
     const m = JSON.parse(evt.data);
     debugLog(m);
 
-    const payload = m['payload'];
     switch (m['action']) {
-    case ATTENDEES_ACT:
-        debugLog('Updating attendees');
-        updateAttendees(payload['attendees']);
+    case "DUPLICATEUSER":
+        debugLog('Duplicate user');
+        updateAttendees(m['attendees']);
+        retryUser();
         break;
     case UPDATE_WORLD:
         debugLog('Updating entire page');
@@ -161,13 +183,10 @@ ws.onmessage = evt => {
     }
 };
 
-ws.onopen = () => {
-    const initMsg = { action: "ClientInit", room: roomid, attendee: username};
-    ws.send(JSON.stringify(initMsg));
-};
+ws.onopen = initRoom;
 
 const deleteCookie = function() {
-    document.cookie = `${cookieName}=NA; expires=Fri, 14 May 2021 00:00:00 UTC; path=/`;
+    document.cookie = `${cookieName}=NA; expires=Fri, 14 May 2021 00:00:00 UTC; path=/; SameSite=Strict`;
 };
 
 
@@ -187,3 +206,6 @@ const closeRoom = function() {
         window.location = '/';
     }
 };
+
+setUserDisplay(username);
+debug = true;
