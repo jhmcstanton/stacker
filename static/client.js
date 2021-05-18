@@ -46,6 +46,7 @@ const QOTHER_ACT    = 'QOTHER';
 const ATTENDEES_ACT = 'UPDATE_ATTENDEES';
 const UPDATE_WORLD  = 'WORLD';
 const REORDER_ACT   = 'REORDER';
+const CANCEL_ACT    = 'CANCEL';
 const q      = protocol(QUEUE_ACT);
 const next   = protocol(NEXT_ACT);
 const qother = function(el) {
@@ -74,6 +75,12 @@ const shifter = function(l, r, stacktype) {
     const stack = [...stacktype === LOCALSTACK ? localStack : globalStack];
     swap(stack, l, r);
     protocol(REORDER_ACT, { newstack: stack })(stacktype);
+};
+
+const cancel = function(index, stacktype) {
+    const stack = [...stacktype === LOCALSTACK ? localStack : globalStack];
+    stack.splice(index, 1);
+    protocol(CANCEL_ACT, { newstack: stack })(stacktype);
 };
 
 const updateAttendees = function(attendees) {
@@ -115,8 +122,14 @@ const newQueue = function(stacktype, items) {
         const downButton = document.createElement('button');
         downButton.appendChild(document.createTextNode('↓'));
         downButton.onclick = function() { shiftDown(k, stacktype); };
+
+        const cancelButton = document.createElement('button');
+        cancelButton.appendChild(document.createTextNode("✕"));
+        cancelButton.onclick = function() { cancel(k, stacktype); };
+
         newli.appendChild(upButton);
         newli.appendChild(downButton);
+        newli.appendChild(cancelButton);
         stackel.appendChild(newli);
         i++;
     });
@@ -208,4 +221,3 @@ const closeRoom = function() {
 };
 
 setUserDisplay(username);
-debug = true;

@@ -21,6 +21,7 @@ module Data.Types
   , nextGlobal
   , lengthLocal
   , reorder
+  , cancelStack
   , peakNextGlobal
   , userList
   , uuidToText
@@ -127,6 +128,18 @@ reorder suggestedList = stackToFunc (ql replaceQ) (qg replaceQ) where
   suggestedQueue :: Queue a
   suggestedQueue = Q.fromList suggestedList
 
+cancelStack :: forall a. Ord a => [a] -> StackType -> RoomState' a -> RoomState' a
+cancelStack suggestedList = stackToFunc (ql replaceQ) (qg replaceQ) where
+  replaceQ :: Queue a -> Queue a
+  replaceQ existingQueue =
+    -- Checks that the existing and suggested queue at least contain
+    -- the same elements
+    if Q.depth suggestedQueue == Q.depth existingQueue - 1
+    then suggestedQueue
+    else existingQueue
+  suggestedQueue :: Queue a
+  suggestedQueue = Q.fromList suggestedList
+
 ql :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
 ql queueFunc roomState@RoomState{rlocal} = roomState{rlocal=queueFunc rlocal}
 
@@ -146,9 +159,10 @@ data Payload =
   LEAVE                                                                               |
   CLOSE                                                                               |
   REORDER { stack :: StackType, newstack :: [UserID]                                } |
+  CANCEL  { stack :: StackType, newstack :: [UserID]                                } |
   WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |
   CLIENTINIT { attendee :: UserID, room :: RoomID                                   } |
-  DUPLICATEUSER { attendees :: [UserID]                                             } 
+  DUPLICATEUSER { attendees :: [UserID]                                             }
   deriving (Eq, Generic, Ord, Read, Show)
 
 
