@@ -9,6 +9,9 @@ const roomCookie = document.cookie.split("; ")
       .find(cookie => cookie.startsWith(cookieName));
 const username = roomCookie.split('=')[1];
 document.getElementById('userdisplay').innerHTML = `Hello, ${username}!`;
+const attendees   = [];
+const localStack  = [];
+const globalStack = [];
 
 let scheme = "wss";
 let port   = 443;
@@ -32,7 +35,7 @@ const LOCALSTACK = 'LOCAL';
 const BROADSTACK = 'BROAD';
 const protocol = function(action, extra = {}) {
     return (el) => {
-        const stacktype = el.parentElement.id;
+        const stacktype = typeof el === 'string' ? el : el.parentElement.id;
         const msg = Object.assign(extra, { action: action, stack: stacktype });
         debugLog(`From protocol: [${JSON.stringify(msg)}]`);
         ws.send(JSON.stringify(msg));
@@ -43,6 +46,7 @@ const NEXT_ACT      = 'NEXT';
 const QOTHER_ACT    = 'QOTHER';
 const ATTENDEES_ACT = 'UPDATE_ATTENDEES';
 const UPDATE_WORLD  = 'WORLD';
+const REORDER_ACT   = 'REORDER';
 const q      = protocol(QUEUE_ACT);
 const next   = protocol(NEXT_ACT);
 const qother = function(el) {
@@ -51,16 +55,26 @@ const qother = function(el) {
     protocol(QOTHER_ACT, {other: attendee})(el);
 };
 
-const appendQueue = function(stacktype, newItem) {
-    const stackel = document.getElementById(`${stacktype}-discussion`);
-    const newli   = document.createElement('li');
-    newli.appendChild(document.createTextNode(newItem));
-    stackel.appendChild(newli);
+const shiftUp = function(i, stacktype) {
+    shifter(i, i - 1, stacktype);
 };
 
-const popQueue = function(stacktype) {
-    const stackel = document.getElementById(`${stacktype}-discussion`);
-    stackel.removeChild(stackel.childNodes[0]);
+const shiftDown = function(i, stacktype) {
+    shifter(i, i + 1, stacktype);
+};
+
+const swap = function(xs, l, r) {
+    if (l < 0 || l >= xs.length || r < 0 || r >= xs.length) return xs;
+    const holdthis = xs[l];
+    xs[l] = xs[r];
+    xs[r] = holdthis;
+    return xs;
+};
+
+const shifter = function(l, r, stacktype) {
+    const stack = [...stacktype === LOCALSTACK ? localStack : globalStack];
+    swap(stack, l, r);
+    protocol(REORDER_ACT, { newstack: stack })(stacktype);
 };
 
 const updateAttendees = function(attendees) {
@@ -91,10 +105,21 @@ const updateAttendees = function(attendees) {
 const newQueue = function(stacktype, items) {
     const stackel = document.getElementById(`${stacktype.toLowerCase()}-discussion`);
     stackel.innerHTML = '';
+    let i = 0;
     items.forEach(item => {
+        let k = i;
         const newli   = document.createElement('li');
         newli.appendChild(document.createTextNode(item));
+        const upButton = document.createElement('button');
+        upButton.appendChild(document.createTextNode('↑'));
+        upButton.onclick = function() { shiftUp(k, stacktype); };
+        const downButton = document.createElement('button');
+        downButton.appendChild(document.createTextNode('↓'));
+        downButton.onclick = function() { shiftDown(k, stacktype); };
+        newli.appendChild(upButton);
+        newli.appendChild(downButton);
         stackel.appendChild(newli);
+        i++;
     });
 };
 
@@ -102,10 +127,18 @@ const setRoomName = function(name) {
     document.getElementById('roomheader').innerHTML = name;
 };
 
+const copyArray = function(xs, ys) {
+    xs.length = 0;
+    ys.forEach(x => xs.push(x));
+};
+
 const updateWorld = function(msg) {
-    updateAttendees(msg['attendees']);
-    newQueue(LOCALSTACK, msg['local']);
-    newQueue(BROADSTACK, msg['broad']);
+    copyArray(attendees, msg['attendees']);
+    copyArray(localStack, msg['local']);
+    copyArray(globalStack, msg['broad']);
+    updateAttendees(attendees);
+    newQueue(LOCALSTACK, localStack);
+    newQueue(BROADSTACK, globalStack);
     setRoomName(msg['name']);
 };
 
@@ -115,14 +148,6 @@ ws.onmessage = evt => {
 
     const payload = m['payload'];
     switch (m['action']) {
-    case QUEUE_ACT:
-        debugLog('Appending to stack');
-        appendQueue(payload['stack'], payload['attendee']);
-        break;
-    case NEXT_ACT:
-        debugLog('Popping stack');
-        popQueue(payload['stack']);
-        break;
     case ATTENDEES_ACT:
         debugLog('Updating attendees');
         updateAttendees(payload['attendees']);

@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric  #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Data.Types
   (
     RoomID(..)
@@ -19,6 +20,7 @@ module Data.Types
   , nextLocal
   , nextGlobal
   , lengthLocal
+  , reorder
   , peakNextGlobal
   , uuidToText
   , textToUUID
@@ -26,14 +28,14 @@ module Data.Types
   , roomIDToText
   , unRoomID
   ) where
-import           Protolude             hiding (Text, empty, local)
+import           Protolude              hiding (Text, empty, local, sort)
 import           Data.Aeson
-import qualified Data.Set       as Set
-import           Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as Text
-import           Data.UUID      (UUID)
-import qualified Data.UUID      as UUID
-import           GHC.Generics   ()
+import qualified Data.Set        as Set
+import           Data.Text.Lazy  (Text)
+import qualified Data.Text.Lazy  as Text
+import           Data.UUID       (UUID)
+import qualified Data.UUID       as UUID
+import           GHC.Generics    ()
 
 import           Data.Queue as Q
 
@@ -105,6 +107,18 @@ lengthLocal = Q.depth . rlocal
 peakNextGlobal :: RoomState' a -> Maybe a
 peakNextGlobal = Q.peak . rglobal
 
+reorder :: forall a. Ord a => [a] -> StackType -> RoomState' a -> RoomState' a
+reorder suggestedList = stackToFunc (ql replaceQ) (qg replaceQ) where
+  replaceQ :: Queue a -> Queue a
+  replaceQ existingQueue =
+    -- Checks that the existing and suggested queue at least contain
+    -- the same elements
+    if Q.sort suggestedQueue == Q.sort existingQueue
+    then suggestedQueue
+    else existingQueue
+  suggestedQueue :: Queue a
+  suggestedQueue = Q.fromList suggestedList
+
 ql :: (Queue a -> Queue a) -> RoomState' a -> RoomState' a
 ql queueFunc roomState@RoomState{rlocal} = roomState{rlocal=queueFunc rlocal}
 
@@ -118,11 +132,12 @@ stackToFunc _ broad BROAD = broad
 data StackType = LOCAL | BROAD deriving (Eq, Generic, Ord, Read, Show)
 
 data Payload =
-  QUEUE  { stack :: StackType                                                       } |
-  QOTHER { stack :: StackType, other :: UserID                                      } |
-  NEXT   { stack :: StackType                                                       } |
+  QUEUE   { stack :: StackType                                                      } |
+  QOTHER  { stack :: StackType, other :: UserID                                     } |
+  NEXT    { stack :: StackType                                                      } |
   LEAVE                                                                               |
   CLOSE                                                                               |
+  REORDER { stack :: StackType, newstack :: [UserID]                                } |
   WORLD { attendees :: [UserID], local :: [UserID], broad :: [UserID], name :: Text } |
   ClientInit { attendee :: UserID, room :: RoomID                                   }
   deriving (Eq, Generic, Ord, Read, Show)

@@ -171,6 +171,9 @@ createReader attendee rid conn cache = forkIO . forever $ do
                      Just nextSpeaker -> do
                        let room' = qLocal nextSpeaker . nextLocal . nextGlobal $ room
                        Cache.insert rid room' cache
+        Just REORDER{stack, newstack} -> do
+          let room' = reorder newstack stack room
+          Cache.insert rid room' cache
         Just LEAVE       -> do
           let room' = deleteUser attendee room
           Cache.insert rid room' cache

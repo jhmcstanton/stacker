@@ -59,7 +59,7 @@ docker run -e PORT=<new port> -e HOST=<new host> --rm ...
 
 - ~Dockerize~
 - ~Add support for stacking on behalf of other attendees~
-- Add progressive stack / method to move people around the stack
+- Add progressive stack / ~method to move people around the stack~
 - Add speak counter to attendees
 - Prettify UI
 - Consider separating the websocket app from the http app
