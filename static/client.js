@@ -105,7 +105,6 @@ const updateAttendees = function(attendees) {
     selectl.innerHTML     = '';
     selectb.innerHTML     = '';
     for(const [attendee, count] of Object.entries(attendees)) {
-        console.log(attendee, count);
         const row = document.createElement('tr');
         const attendeeEl = document.createElement('td');
         attendeeEl.appendChild(document.createTextNode(attendee));
@@ -176,7 +175,6 @@ const copyObj = function(xs, ys) {
 };
 
 const updateWorld = function(msg) {
-    console.log(msg);
     copyObj(attendees, msg['attendeeToCount']);
     copyArray(localStack, msg['local']);
     copyArray(globalStack, msg['broad']);
