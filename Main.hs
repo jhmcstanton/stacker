@@ -187,6 +187,10 @@ createReader attendee rid conn cache = forkIO . forever $ do
         Just CANCEL{stack, newstack}  -> do
           let room' = cancelStack newstack stack room
           Cache.insert rid room' cache
+        Just ADD{other} -> do
+          case newUser other room of
+            Nothing    -> pure ()
+            Just room' -> Cache.insert rid room' cache
         Just LEAVE       -> do
           let room' = deleteUser attendee room
           Cache.insert rid room' cache

@@ -58,4 +58,8 @@ footer {
 th {
     padding: 10px;
 }
+#other-attendee-username {
+    width: 40%;
+    display: inline;
+}
 

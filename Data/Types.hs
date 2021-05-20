@@ -165,6 +165,7 @@ data Payload =
   CLOSE                                                          |
   REORDER { stack :: StackType, newstack :: [UserID]           } |
   CANCEL  { stack :: StackType, newstack :: [UserID]           } |
+  ADD   { other :: UserID                                      } |
   WORLD { attendeeToCount :: Map UserID Int, local :: [UserID],
           broad :: [UserID], name :: Text }                      |
   CLIENTINIT { attendee :: UserID, room :: RoomID              } |

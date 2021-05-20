@@ -47,6 +47,7 @@ const ATTENDEES_ACT = 'UPDATE_ATTENDEES';
 const UPDATE_WORLD  = 'WORLD';
 const REORDER_ACT   = 'REORDER';
 const CANCEL_ACT    = 'CANCEL';
+const ADD_ACT       = 'ADD';
 const q      = protocol(QUEUE_ACT);
 const next   = protocol(NEXT_ACT);
 const qother = function(el) {
@@ -81,6 +82,19 @@ const cancel = function(index, stacktype) {
     const stack = [...stacktype === LOCALSTACK ? localStack : globalStack];
     stack.splice(index, 1);
     protocol(CANCEL_ACT, { newstack: stack })(stacktype);
+};
+
+const addOtherAttendee = function() {
+    const otherEl = document.getElementById("other-attendee-username");
+    const other   = otherEl.value.trim();
+    if (!other) {
+        alert("Attendee name is required!");
+        return;
+    }
+    const msg = { action: ADD_ACT, other: other };
+    debugLog(`From protocol: [${JSON.stringify(msg)}]`);
+    ws.send(JSON.stringify(msg));
+    otherEl.value = '';
 };
 
 const updateAttendees = function(attendees) {
