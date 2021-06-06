@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>stacker</title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+    </head>
+    <body>
+        <h1>Stacker</h1>
+        <h2 id="clock"></h2>
+        <p>This page will refresh every 10 minutes to keep this Stacker instance alive.
+            This is useful when your instance is running somewhere that puts a webapp to sleep
+        after a short period of web inactivity.</p>
+        <link rel="stylesheet" type="text/css" href="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.css"/><script src="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.js" defer></script><script>window.addEventListener("load", function(){window.wpcc.init({"border":"thin","corners":"small","colors":{"popup":{"background":"#f6f6f6","text":"#000000","border":"#555555"},"button":{"background":"#555555","text":"#ffffff"}},"content":{"href":"/static/cookie-policy/"},"position":"bottom"})});</script>
+        <footer>
+            <ul class="footer-links">
+                <li><a href="/static/privacy-policy/">Privacy Policy</a></li>
+                <li><a href="/static/cookie-policy/">Cookie Policy</a></li>
+            </ul>
+        </footer>
+        <script src="/static/keepalive.js"></script>
+    </body>
+</html>

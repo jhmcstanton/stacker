@@ -39,14 +39,15 @@ main :: IO ()
 main = do
   port <- sysWithDefault "PORT" read 80
   host <- sysWithDefault "HOST" fromString "*4"
+  keepAliveURL <- Sys.lookupEnv "KEEPALIVE_URL"
   let settings = Warp.setHost host $ Warp.setPort port Warp.defaultSettings
   cache <- Cache.newAtomicLRU Nothing
-  sapp  <- scottyApp cache
+  sapp  <- scottyApp cache keepAliveURL
   let wsapp = websockApp cache
   Warp.runSettings settings $ WaiWs.websocketsOr WS.defaultConnectionOptions wsapp sapp
 
-scottyApp :: RoomCache -> IO Wai.Application
-scottyApp cache =
+scottyApp :: RoomCache -> Maybe String -> IO Wai.Application
+scottyApp cache keepAlive =
   Sc.scottyApp $ do
     Sc.middleware $ Sc.gzip (Sc.def { Sc.gzipFiles = Sc.GzipCompress }) . Wai.logStdout
 
@@ -71,6 +72,12 @@ scottyApp cache =
     Sc.get "/static/client.js" $ Sc.file "static/client.js"
     Sc.get "/static/invite.js" $ Sc.file "static/invite.js"
     Sc.get "/static/style.css" $ Sc.file "static/style.css"
+
+    case keepAlive of
+      Nothing  -> pure ()
+      Just url -> do
+        Sc.get (Sc.capture url) $ Sc.file "static/keepalive.html"
+        Sc.get "/static/keepalive.js" $ Sc.file "static/keepalive.js"
 
 websockApp :: RoomCache -> WS.ServerApp
 websockApp cache pending = do

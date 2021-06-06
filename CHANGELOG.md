@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for adding other people to meeting. Useful when facilitating users who
   cannot use stacker easily, like phone users
+- Keepalive url for Heroku free tier
 
 ## [0.4.0] - 2021-05-18
 ### Added

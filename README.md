@@ -23,12 +23,15 @@ one](https://github.com/mfine/heroku-buildpack-stack) has worked well for me.
 
 ### Heroku Free Tier
 
-*NOTE* if you are on the Heroku free tier the app will sleep after ~30 minutes of
-not being in use (in this case, not receiving new web requests). Be sure to
-refresh the page periodically to ensure it does not do this for long running
-meetings.
+*NOTE* if you are on the Heroku free tier consider using the environment variable
+`KEEPALIVE_URL` to create a new keepalive page in the application. This page is
+useful to keep the application from being put to sleep after ~30 minutes when
+web requests are no longer coming in but meetings are still ongoing. For example,
+adding the variable `KEEAPLIVE_URL=/keepalive` will add a keepalive endpoint that
+just refreshes the page every 10 minutes to keep the application running.
 
 Check out an instance of the free tier at at https://chat-stacker.herokuapp.com
+
 
 ## Docker
 
@@ -54,6 +57,7 @@ with:
 ```
 docker run -e PORT=<new port> -e HOST=<new host> --rm ...  
 ```
+
 
 ## TODO
 
