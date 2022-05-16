@@ -1,6 +1,7 @@
 *.hi
 *.o
 .stack-work/
+node_modules/
 .cabal-sandbox
 cabal.sandbox.config
 .DS_Store

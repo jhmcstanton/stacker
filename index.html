@@ -2,41 +2,51 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>stacker</title>
         <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
-    <body>
+    <body class="bg-slate-50">
         <h1>Stacker</h1>
-        <div class="centerer">
-        <div class="horizontal">
+        <div class="text-center grid grid-cols-2 w-full h-full content-center">
+        <div class="w-full h-full">
             <form name="create-room" action="/" method="POST" onsubmit="return verifyform(this)">
                 <h2>Create a Room</h2>
-                <label for="room-name">Room Name</label>
-                <input type="text" name="room-name">
-                <label for="username">Your Display Name</label>
-                <input type="text" name="username">
-                <input type="submit" value="Get Started!">
+                <label class="block w-full" for="room-name">
+                    <span class="block text-slate-700 text-sm">Room Name</span>
+                    <input class="rounded" type="text" name="room-name">
+                </label>
+                <label class="block w-full" for="username">
+                    <span class="block text-slate-700 text-sm">Your Display Name</span>
+                    <input class="rounded" type="text" name="username">
+                </label>
+                <button>Get Started!</button>
+
             </form>
         </div>
-        <div class="horizontal">
+        <div class="w-full h-full">
             <!-- TODO: Consider making this just go straight to /room/:id unless
                  the password is readded? -->
             <form name="join" action="/" method="POST" onsubmit="return verifyform(this)">
                 <h2>Join a Room</h2>
-                <label for="room-id">Room ID</label>
-                <input type="text" name="room-id" id="room-id">
-                <label for="username">Your Display Name</label>
-                <input type="text" name="username">
-                <input type="submit" value="Join!">
+                <label class="block w-full" for="room-id">
+                    <span class="block text-slate-700 text-sm">Room ID</span>
+                    <input class="rounded" type="text" name="room-id" id="room-id">
+                </label>
+                <label class="block w-full" for="username">
+                    <span class="block text-slate-700 text-sm">Your Display Name</span>
+                    <input class="rounded" type="text" name="username">
+                </label>
+                <button>Join!</button>
             </form>
         </div>
         </div>
         <link rel="stylesheet" type="text/css" href="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.css"/><script src="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.js" defer></script><script>window.addEventListener("load", function(){window.wpcc.init({"border":"thin","corners":"small","colors":{"popup":{"background":"#f6f6f6","text":"#000000","border":"#555555"},"button":{"background":"#555555","text":"#ffffff"}},"content":{"href":"/static/cookie-policy/"},"position":"bottom"})});</script>
         <script src="/static/invite.js"></script>
-        <footer>
-            <ul class="footer-links">
-                <li><a href="/static/privacy-policy/">Privacy Policy</a></li>
-                <li><a href="/static/cookie-policy/">Cookie Policy</a></li>
+        <footer class="w-full place-content-center fixed bottom-0">
+            <ul class="w-full text-center place-content-center">
+                <li class="inline m-4"><a class="text-blue-500" href="/static/privacy-policy/">Privacy Policy</a></li>
+                <li class="inline m-4"><a class="text-blue-500" href="/static/cookie-policy/">Cookie Policy</a></li>
             </ul>
         </footer>
     </body>
