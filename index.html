@@ -8,8 +8,8 @@
     </head>
     <body class="bg-slate-50">
         <h1>Stacker</h1>
-        <div class="text-center grid grid-cols-2 w-full h-full content-center">
-        <div class="w-full h-full">
+        <div class="text-center grid grid-cols-2 gap-4 mt-2 w-full h-full content-center">
+            <div class="w-full h-full border border-sky-500">
             <form name="create-room" action="/" method="POST" onsubmit="return verifyform(this)">
                 <h2>Create a Room</h2>
                 <label class="block w-full" for="room-name">
@@ -24,7 +24,7 @@
 
             </form>
         </div>
-        <div class="w-full h-full">
+        <div class="w-full h-full border border-sky-500">
             <!-- TODO: Consider making this just go straight to /room/:id unless
                  the password is readded? -->
             <form name="join" action="/" method="POST" onsubmit="return verifyform(this)">

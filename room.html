@@ -18,8 +18,8 @@
         </header>
         <h1 id="roomheader" ></h1>
         <p id="userdisplay"></p>
-        <div class="h-full grid grid-cols-3">
-            <div class="w-full h-full" id="LOCAL">
+        <div class="h-full grid grid-cols-3 gap-4 mt-2">
+            <div class="w-full h-full border-2 border-sky-500 p-2" id="LOCAL">
                 <h2>Current Discussion</h2>
                 <ol id="local-discussion">
                 </ol>
@@ -28,7 +28,7 @@
                 <select name="stack-other-now" id="local-stack-other"></select>
                 <button onclick="qother(this)">Stack Someone Else!</button>
             </div>
-            <div class="w-full h-full" id="BROAD">
+            <div class="w-full h-full border-2 border-sky-500 p-2" id="BROAD">
                 <h2>Broader Discussion</h2>
                 <ol id="broad-discussion">
                 </ol>
@@ -37,7 +37,7 @@
                 <select name="stack-other-broad" id="broad-stack-other"></select>
                 <button onclick="qother(this)">Stack Someone Else!</button>
             </div>
-            <div class="w-full h-full">
+            <div class="w-full h-full border-2 border-sky-500 p-2">
                 <h2>Attendees</h2>
                 <table>
                     <thead>
