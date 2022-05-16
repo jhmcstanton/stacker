@@ -4,6 +4,8 @@ Simple web app to facilitate stack based video meetings.
 
 ## Dev
 
+### Server
+
 This project uses [`stack`](https://docs.haskellstack.org/en/stable/README/) for builds
 and deployments. Use the classic
 
@@ -14,6 +16,15 @@ stack exec stacker
 ```
 
 to get clean, build, then run locally.
+
+## Client
+
+This project is now using tailwind for styling. Run the following to make
+changes and build the new css.
+
+```
+npx tailwindcss -i ./static/src/style.css -o ./static/style.css  --watch
+```
 
 ## Deploy to Heroku
 
@@ -66,5 +77,5 @@ docker run -e PORT=<new port> -e HOST=<new host> --rm ...
 - Add progressive stack / ~method to move people around the stack~
 - Add support for context based stacking
 - ~Add speak counter to attendees~
-- Prettify UI
+- ~Prettify UI~
 - Consider separating the websocket app from the http app

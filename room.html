@@ -2,43 +2,42 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>stacker</title>
         <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
-    <body>
-        <div class="dropdown">
-            <div class="menu-bar"></div>
-            <div class="menu-bar"></div>
-            <div class="menu-bar"></div>
-            <ul class="dropdown-content">
-                <a href="#"><li onclick="leaveRoom()">Leave Room</li></a>
-                <a href="#"><li onclick="closeRoom()">Close Room</li></a>
+    <body class="bg-slate-50">
+        <header class="w-full p-5px fixed">
+            <div id="menu-dropdown-container" class="top-0 right-0 mb-0 dropdown fixed inline-block">
+                <button class="top-0 right-0 mb-0 static inline-flex items-center" id="menu-dropdown-default"><span>Menu </span><svg class="w-4 h-4 ml-2 inline absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+            <ul class="py-1 text-sm text-gray-700 dark:text-gray-200 hidden dropdown-menu pt-1 static">
+                <li><a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrapblock" href="#" onclick="leaveRoom()" >Leave Room</a></li>
+                <li><a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap" href="#" onclick="closeRoom()">Close Room</a></li>
             </ul>
-        </div>
-        <h1 id="roomheader"></h1>
+            </div>
+        </header>
+        <h1 id="roomheader" ></h1>
         <p id="userdisplay"></p>
-        <div class="centerer">
-            <div class="horizontal" id="LOCAL">
+        <div class="h-full grid grid-cols-3">
+            <div class="w-full h-full" id="LOCAL">
                 <h2>Current Discussion</h2>
                 <ol id="local-discussion">
                 </ol>
                 <button onclick="q(this)">STACK this discussion!</button>
                 <button onclick="next(this)">Next in STACK!</button>
-                <br>
                 <select name="stack-other-now" id="local-stack-other"></select>
                 <button onclick="qother(this)">Stack Someone Else!</button>
             </div>
-            <div class="horizontal" id="BROAD">
+            <div class="w-full h-full" id="BROAD">
                 <h2>Broader Discussion</h2>
                 <ol id="broad-discussion">
                 </ol>
-                <button onclick="q(this)">Start another STACK!</button>
+                <button onclick="q(this)" >Start another STACK!</button>
                 <button onclick="next(this)">Start next discussion!</button>
-                <br>
                 <select name="stack-other-broad" id="broad-stack-other"></select>
-                <button onclick="qother(this)">Stack Someone Else!</button>
+                <button>Stack Someone Else!</button>
             </div>
-            <div class="horizontal">
+            <div class="w-full h-full">
                 <h2>Attendees</h2>
                 <table>
                     <thead>
@@ -52,18 +51,17 @@
                 <input type="text" id="other-attendee-username">
                 <button onclick="addOtherAttendee()">+</button>
             </div>
-            <p>Link to room: <span id="copylink"></span></p>
-            <br>
-            <button onclick="copier()">Copy share link to clipboard.</button>
         </div>
-        <script src="/static/client.js"></script>
-        <script src="/static/invite.js"></script>
         <link rel="stylesheet" type="text/css" href="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.css"/><script src="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.js" defer></script><script>window.addEventListener("load", function(){window.wpcc.init({"border":"thin","corners":"small","colors":{"popup":{"background":"#f6f6f6","text":"#000000","border":"#555555"},"button":{"background":"#555555","text":"#ffffff"}},"content":{"href":"/static/cookie-policy/"},"position":"bottom"})});</script>
-        <footer>
-            <ul class="footer-links">
-                <li><a href="/static/privacy-policy/">Privacy Policy</a></li>
-                <li><a href="/static/cookie-policy/">Cookie Policy</a></li>
+        <footer class="w-full place-content-center fixed bottom-0">
+            <p>Link to room: <span id="copylink"></span></p>
+            <button onclick="copier()">Copy share link to clipboard.</button>
+            <ul class="w-full text-center place-content-center">
+                <li class="inline m-4"><a href="/static/privacy-policy/">Privacy Policy</a></li>
+                <li class="inline m-4"><a href="/static/cookie-policy/">Cookie Policy</a></li>
             </ul>
         </footer>
+        <script src="/static/client.js"></script>
+        <script src="/static/invite.js"></script>
     </body>
 </html>
