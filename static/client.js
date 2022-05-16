@@ -134,7 +134,14 @@ const newQueue = function(stacktype, items) {
     items.forEach(item => {
         let k = i;
         const newli   = document.createElement('li');
-        newli.appendChild(document.createTextNode(item));
+        newli.setAttribute('class', 'grid grid-cols-2');
+        const spanNode = document.createElement('span');
+        spanNode.setAttribute('class', 'inline-flex items-center');
+        newli.appendChild(spanNode);
+        spanNode.appendChild(document.createTextNode(item));
+        const buttonWrapper = document.createElement('div');
+        buttonWrapper.setAttribute('class', 'justify-self-end justify-items-end inline');
+        newli.appendChild(buttonWrapper);
         const upButton = document.createElement('button');
         upButton.appendChild(document.createTextNode('↑'));
         upButton.onclick = function() { shiftUp(k, stacktype); };
@@ -146,9 +153,9 @@ const newQueue = function(stacktype, items) {
         cancelButton.appendChild(document.createTextNode("✕"));
         cancelButton.onclick = function() { cancel(k, stacktype); };
 
-        newli.appendChild(upButton);
-        newli.appendChild(downButton);
-        newli.appendChild(cancelButton);
+        buttonWrapper.appendChild(upButton);
+        buttonWrapper.appendChild(downButton);
+        buttonWrapper.appendChild(cancelButton);
         stackel.appendChild(newli);
         i++;
     });

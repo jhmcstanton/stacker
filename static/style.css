@@ -715,16 +715,16 @@ a {
   margin: 1rem;
 }
 
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
 .mb-0 {
   margin-bottom: 0px;
 }
 
 .ml-2 {
   margin-left: 0.5rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
 }
 
 .block {
@@ -769,6 +769,10 @@ a {
 
 .w-4 {
   width: 1rem;
+}
+
+.table-auto {
+  table-layout: auto;
 }
 
 .grid-cols-2 {
