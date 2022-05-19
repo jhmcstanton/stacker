@@ -145,7 +145,6 @@ const newQueue = function(stacktype, items) {
         spanNode.appendChild(document.createTextNode(item));
         const buttonWrapper = document.createElement('div');
         buttonWrapper.setAttribute('class', 'justify-self-end justify-items-end inline');
-        newli.appendChild(buttonWrapper);
         const upButton = document.createElement('button');
         upButton.appendChild(document.createTextNode('↑'));
         upButton.onclick = function() { shiftUp(k, stacktype); };
@@ -160,6 +159,9 @@ const newQueue = function(stacktype, items) {
         buttonWrapper.appendChild(upButton);
         buttonWrapper.appendChild(downButton);
         buttonWrapper.appendChild(cancelButton);
+        if (hash('facilitator')) {
+            newli.appendChild(buttonWrapper);
+        }
         stackel.appendChild(newli);
         i++;
     });
@@ -272,7 +274,7 @@ const revealElementByClassName = (frag, name) => function () {
     }
 };
 const setFacilitatorScreen = revealElementByClassName('facilitator', 'controls');
-const setStack2            = revealElementByClassName('stacktwo', 'stacktw');
+const setStack2            = revealElementByClassName('stacktwo', 'stacktwo');
 
 debug = location.host === 'localhost';
 setUserDisplay(username);
