@@ -265,15 +265,16 @@ const hash = function(k) {
 };
 const revealElementByClassName = (frag, name) => function () {
     if (hash(frag)) {
-        for (el of document.getElementsByClassName(name)) {
-            el.classList.remove(name);
+        const els = document.getElementsByClassName(name);
+        while (els.length > 0) {
+            els[0].classList.remove(name);
         }
     }
 };
 const setFacilitatorScreen = revealElementByClassName('facilitator', 'controls');
 const setStack2            = revealElementByClassName('stacktwo', 'stacktw');
 
+debug = location.host === 'localhost';
 setUserDisplay(username);
 setFacilitatorScreen();
 setStack2();
-debug = location.host === 'localhost';
