@@ -143,7 +143,7 @@ createRoom req cache = do
 
   let rid   = unRoomID $ roomID rstate
   Sc.setSimpleCookie (userCookie rid) (Text.toStrict $ username req)
-  Sc.redirect $ "/room/" <> uuidToText rid
+  Sc.redirect $ "/room/" <> uuidToText rid <> "#facilitator"
 
 param :: Text -> [Sc.Param] -> Maybe Text
 param var = fmap snd . find (\(par, _) -> par == var)

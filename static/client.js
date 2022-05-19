@@ -34,9 +34,9 @@ const LOCALSTACK = 'LOCAL';
 const BROADSTACK = 'BROAD';
 const protocol = function(action, extra = {}) {
     return (el) => {
-        const stacktype = typeof el === 'string' ? el : el.parentElement.id;
+        const stacktype = typeof el === 'string' ? el : el.parentElement.parentElement.id;
         const msg = Object.assign(extra, { action: action, stack: stacktype });
-        debugLog(`From protocol: [${JSON.stringify(msg)}]`);
+        debugLog(`From protocol: [${JSON.stringify(msg)}, el: [${el.parentElement.id}]`);
         ws.send(JSON.stringify(msg));
     };
 };
@@ -51,7 +51,7 @@ const ADD_ACT       = 'ADD';
 const q      = protocol(QUEUE_ACT);
 const next   = protocol(NEXT_ACT);
 const qother = function(el) {
-    const selID    = `${el.parentElement.id.toLowerCase()}-stack-other`;
+    const selID    = `${el.parentElement.parentElement.id.toLowerCase()}-stack-other`;
     const attendee = document.getElementById(selID).value;
     protocol(QOTHER_ACT, {other: attendee})(el);
 };
@@ -249,12 +249,26 @@ const leaveRoom = function() {
 };
 
 const closeRoom = function() {
-    if(confirm("Are you sure? This will close the room for everyone!")) {
+    if(hash('facilitator') && confirm("Are you sure? This will close the room for everyone!")) {
         const closeMsg = { action: "CLOSE" };
         ws.send(JSON.stringify(closeMsg));
         deleteCookie();
         window.location = '/';
     }
 };
+const hash = function(k) {
+    return document.location.hash.includes(k);
+};
+const revealElementByClassName = (frag, name) => function () {
+    if (hash(frag)) {
+        for (el of document.getElementsByClassName(name)) {
+            el.classList.remove(name);
+        }
+    }
+};
+const setFacilitatorScreen = revealElementByClassName('facilitator', 'controls');
+const setStack2            = revealElementByClassName('stacktwo', 'stacktw');
 
 setUserDisplay(username);
+setFacilitatorScreen();
+setStack2();

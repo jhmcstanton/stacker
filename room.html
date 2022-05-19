@@ -9,7 +9,7 @@
     <body>
         <header class="w-full p-5px fixed">
             <div id="menu-dropdown-container" class="top-0 right-0 mb-0 dropdown fixed inline-block">
-                <button class="top-0 right-0 mb-0 static inline-flex items-center" id="menu-dropdown-default"><span>Menu </span><svg class="w-4 h-4 ml-2 inline absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+                <button class="top-0 right-0 mb-0 static inline-flex items-center" id="menu-dropdown-default"><span>Menu </span></button>
             <ul class="py-1 text-sm text-gray-700 dark:text-gray-200 hidden dropdown-menu pt-1 static">
                 <li><a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrapblock" href="#" onclick="leaveRoom()" >Leave Room</a></li>
                 <li><a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap" href="#" onclick="closeRoom()">Close Room</a></li>
@@ -25,18 +25,22 @@
                 <ol id="local-discussion" >
                 </ol>
                 <button onclick="q(this)">STACK this discussion!</button>
-                <button onclick="next(this)">Next in STACK!</button>
-                <select name="stack-other-now" id="local-stack-other"></select>
-                <button onclick="qother(this)">Stack Someone Else!</button>
+                <div class="controls">
+                    <button onclick="next(this)">Next in STACK!</button>
+                    <select name="stack-other-now" id="local-stack-other"></select>
+                    <button onclick="qother(this)">Stack Someone Else!</button>
+                </div>
             </div>
-            <div class="w-full max-w-xs h-full border-2 border-sky-500 p-2" id="BROAD">
+            <div class="w-full max-w-xs h-full border-2 border-sky-500 p-2 stacktwo" id="BROAD">
                 <h2>Broader Discussion</h2>
                 <ol id="broad-discussion" >
                 </ol>
                 <button onclick="q(this)" >Start another STACK!</button>
-                <button onclick="next(this)">Start next discussion!</button>
-                <select name="stack-other-broad" id="broad-stack-other"></select>
-                <button onclick="qother(this)">Stack Someone Else!</button>
+                <div class="controls">
+                    <button onclick="next(this)">Start next discussion!</button>
+                    <select name="stack-other-broad" id="broad-stack-other"></select>
+                    <button onclick="qother(this)">Stack Someone Else!</button>
+                </div>
             </div>
             <div class="max-w-ws h-full border-2 border-sky-500 p-2">
                 <h2>Attendees</h2>
@@ -49,8 +53,10 @@
                     </thead>
                     <tbody id="attendees"></tbody>
                 </table>
-                <input type="text" id="other-attendee-username">
-                <button onclick="addOtherAttendee()">+</button>
+                <div class="controls">
+                    <input type="text" id="other-attendee-username">
+                    <button onclick="addOtherAttendee()">+</button>
+                </div>
             </div>
         </div>
         <link rel="stylesheet" type="text/css" href="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.css"/><script src="https://cdn.websitepolicies.net/lib/cookieconsent/1.0.2/cookieconsent.min.js" defer></script><script>window.addEventListener("load", function(){window.wpcc.init({"border":"thin","corners":"small","colors":{"popup":{"background":"#f6f6f6","text":"#000000","border":"#555555"},"button":{"background":"#555555","text":"#ffffff"}},"content":{"href":"/static/cookie-policy/"},"position":"bottom"})});</script>

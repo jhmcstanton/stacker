@@ -34,6 +34,13 @@
         @apply form-select;
     }
 }
+.controls {
+    display: none;
+}
+.stacktwo {
+    display: none;
+}
+
 .dropdown:hover .dropdown-menu {
     display: block;
 }
