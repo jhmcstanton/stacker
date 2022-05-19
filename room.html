@@ -20,29 +20,33 @@
         <h1 id="roomheader" ></h1>
         <p id="userdisplay"></p>
         <div class="flex flex-wrap justify-center content-start gap-4 mt-2">
-            <div class="w-full max-w-xs h-full border-2 border-sky-500 p-2" id="LOCAL">
+            <div class="w-full max-w-fit min-w-xs h-full border-2 border-sky-500 p-2 column-container" id="LOCAL">
                 <h2>Current Discussion</h2>
                 <ol id="local-discussion" >
                 </ol>
-                <button onclick="q(this)">STACK this discussion!</button>
+                <button onclick="q('LOCAL')">STACK this discussion!</button>
                 <div class="controls">
-                    <button onclick="next(this)">Next in STACK!</button>
-                    <select name="stack-other-now" id="local-stack-other"></select>
-                    <button onclick="qother(this)">Stack Someone Else!</button>
+                    <button onclick="next('LOCAL')">Next in STACK!</button>
+                    <div class="form-inline">
+                        <select name="stack-other-now" id="local-stack-other"></select>
+                        <button onclick="qother('LOCAL')">Stack Someone Else!</button>
+                    </div>
                 </div>
             </div>
-            <div class="w-full max-w-xs h-full border-2 border-sky-500 p-2 stacktwo" id="BROAD">
+            <div class="w-full max-w-fit min-w-xs h-full border-2 border-sky-500 p-2 column-container stacktwo" id="BROAD">
                 <h2>Broader Discussion</h2>
                 <ol id="broad-discussion" >
                 </ol>
-                <button onclick="q(this)" >Start another STACK!</button>
+                <button onclick="q('BROAD')" >Start another STACK!</button>
                 <div class="controls">
-                    <button onclick="next(this)">Start next discussion!</button>
-                    <select name="stack-other-broad" id="broad-stack-other"></select>
-                    <button onclick="qother(this)">Stack Someone Else!</button>
+                    <button onclick="next('BROAD')">Start next discussion!</button>
+                    <div class="form-inline">
+                        <select name="stack-other-broad" id="broad-stack-other"></select>
+                        <button onclick="qother('BROAD')">Stack Someone Else!</button>
+                    </div>
                 </div>
             </div>
-            <div class="max-w-ws h-full border-2 border-sky-500 p-2">
+            <div class="max-w-ws h-full border-2 border-sky-500 p-2 column-container">
                 <h2>Attendees</h2>
                 <table class="table-auto">
                     <thead>

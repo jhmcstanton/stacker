@@ -33,11 +33,12 @@ window.onbeforeunload = evt => {
 const LOCALSTACK = 'LOCAL';
 const BROADSTACK = 'BROAD';
 const protocol = function(action, extra = {}) {
-    return (el) => {
-        const stacktype = typeof el === 'string' ? el : el.parentElement.parentElement.id;
-        const msg = Object.assign(extra, { action: action, stack: stacktype });
-        debugLog(`From protocol: [${JSON.stringify(msg)}, el: [${el.parentElement.id}]`);
-        ws.send(JSON.stringify(msg));
+    return (stacktype) => {
+        const msgObj = {};
+        Object.assign(msgObj, { action: action, stack: stacktype }, extra);
+        const msg = JSON.stringify(msgObj);
+        debugLog(`From protocol: [${msg}], extra: [${JSON.stringify(extra)}]`);
+        ws.send(msg);
     };
 };
 const QUEUE_ACT     = 'QUEUE';
@@ -50,10 +51,13 @@ const CANCEL_ACT    = 'CANCEL';
 const ADD_ACT       = 'ADD';
 const q      = protocol(QUEUE_ACT);
 const next   = protocol(NEXT_ACT);
-const qother = function(el) {
-    const selID    = `${el.parentElement.parentElement.id.toLowerCase()}-stack-other`;
+const qother = function(stacktype) {
+    const selID = stacktype.toLowerCase() + '-stack-other';
     const attendee = document.getElementById(selID).value;
-    protocol(QOTHER_ACT, {other: attendee})(el);
+    // attendee could be blank in a room with a single attendee
+    if (attendee) {
+        protocol(QOTHER_ACT, {other: attendee})(stacktype);
+    }
 };
 
 const shiftUp = function(i, stacktype) {
@@ -272,3 +276,4 @@ const setStack2            = revealElementByClassName('stacktwo', 'stacktw');
 setUserDisplay(username);
 setFacilitatorScreen();
 setStack2();
+debug = location.host === 'localhost';

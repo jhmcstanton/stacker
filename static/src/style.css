@@ -25,13 +25,25 @@
         @apply text-blue-500
     }
     input[type=text] {
-        @apply rounded form-input w-11/12;
+        @apply rounded form-input w-9/12;
     }
     footer {
         @apply w-full justify-center bottom-0 bg-slate-50 ;
     }
     select {
-        @apply form-select;
+        @apply form-select max-w-[75%];
+    }
+    .form-inline {
+        @apply flex;
+    }
+    .form-inline select {
+        @apply flex-1;
+    }
+    .form-inline button {
+        @apply flex-none;
+    }
+    .column-container {
+        @apply: w-fit;
     }
 }
 .controls {
