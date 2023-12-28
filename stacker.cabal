@@ -1,11 +1,11 @@
+cabal-version: 3.4
 name:          stacker
-version:       0.5.0
-cabal-version: >= 1.8
+version:       0.6.0
 build-type:    Simple
 author:        Jim McStanton
 maintainer:    jim@jhmcstanton.com
 copyright:     2021 Jim McStanton
-license:       AGPL-3
+license:       AGPL-3.0-or-later
 license-file:  LICENSE
 extra-source-files:
     README.md
@@ -15,7 +15,7 @@ executable              stacker
     hs-source-dirs:     .
     main-is:            Main.hs
     ghc-options:        -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
-    extensions:         OverloadedStrings
+    default-extensions: OverloadedStrings
     build-depends:      base                    >= 4      && < 5
                       , aeson
                       , containers

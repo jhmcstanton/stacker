@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+import           Prelude                                     (String, read)
 import           Protolude                            hiding (local)
 
 import           Data.Aeson
@@ -33,7 +34,7 @@ userCookie rid = "username-" <> UUID.toText rid
 
 main :: IO ()
 main = do
-  port <- sysWithDefault "PORT" read 80
+  port <- sysWithDefault "PORT" read 8080
   host <- sysWithDefault "HOST" fromString "*4"
   keepAliveURL <- Sys.lookupEnv "KEEPALIVE_URL"
   let settings = Warp.setHost host $ Warp.setPort port Warp.defaultSettings
