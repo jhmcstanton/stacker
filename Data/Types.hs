@@ -24,18 +24,16 @@ module Data.Types
   , cancelStack
   , peakNextGlobal
   , userList
-  , uuidToText
-  , textToUUID
   , textToRoomID
   , roomIDToText
   , unRoomID
+  , UUID.toText
+  , UUID.fromText
   ) where
-import           Protolude                   hiding (Text, empty, local, sort)
+import           Protolude                    hiding (empty, local, sort)
 import           Data.Aeson
-import           Data.Aeson.Encoding (lazyText)
+import           Data.Aeson.Types
 import qualified Data.Map.Strict     as Map
-import           Data.Text.Lazy      (Text)
-import qualified Data.Text.Lazy      as Text
 import           Data.UUID           (UUID)
 import qualified Data.UUID           as UUID
 import           GHC.Generics        ()
@@ -48,17 +46,11 @@ newtype UserID   = UserID Text deriving (Eq, Generic, Ord, Read, Show)
 unRoomID :: RoomID -> UUID
 unRoomID (RoomID u) = u
 
-uuidToText :: UUID -> Text
-uuidToText = Text.fromStrict . UUID.toText
-
-textToUUID :: Text -> Maybe UUID
-textToUUID = UUID.fromText . Text.toStrict
-
 textToRoomID :: Text -> Maybe RoomID
-textToRoomID = fmap RoomID . textToUUID
+textToRoomID = fmap RoomID . UUID.fromText
 
 roomIDToText :: RoomID -> Text
-roomIDToText = uuidToText . unRoomID
+roomIDToText = UUID.toText . unRoomID
 
 type SpeakReq = UserID
 type RoomName = Text
@@ -176,9 +168,7 @@ data Payload =
 instance FromJSON    UserID
 instance ToJSON      UserID
 instance ToJSONKey   UserID where
-  toJSONKey = ToJSONKeyText f g where
-    f (UserID u) = Text.toStrict u
-    g (UserID u) = lazyText u
+  toJSONKey = toJSONKeyText (\(UserID u) -> u)
 instance FromJSONKey UserID
 instance FromJSON    RoomID
 instance ToJSON      RoomID

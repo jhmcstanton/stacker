@@ -6,18 +6,18 @@ Simple web app to facilitate stack based video meetings.
 
 ### Server
 
-This project uses [`stack`](https://docs.haskellstack.org/en/stable/README/) for builds
+This project uses [`cabal`](https://cabal.readthedocs.io/en/stable/) for builds
 and deployments. Use the classic
 
 ```sh
-stack clean
-stack build
-stack exec stacker
+cabal update
+cabal install
+env PORT=8080 cabal run stacker
 ```
 
-to get clean, build, then run locally.
+to build and run locally on port 8080.
 
-## Client
+### Client
 
 This project is now using tailwind for styling. Run the following to make
 changes and build the new css.
@@ -31,17 +31,6 @@ npx tailwindcss -i ./static/src/style.css -o ./static/style.css  --watch
 I am currently hosting my instance of `stacker` on Heroku. To do the same you
 will need to add a `stack` buildpack for your project. [This
 one](https://github.com/mfine/heroku-buildpack-stack) has worked well for me.
-
-### Heroku Free Tier
-
-*NOTE* if you are on the Heroku free tier consider using the environment variable
-`KEEPALIVE_URL` to create a new keepalive page in the application. This page is
-useful to keep the application from being put to sleep after ~30 minutes when
-web requests are no longer coming in but meetings are still ongoing. For example,
-adding the variable `KEEAPLIVE_URL=/keepalive` will add a keepalive endpoint that
-just refreshes the page every 10 minutes to keep the application running.
-
-Check out an instance of the free tier at at https://chat-stacker.herokuapp.com
 
 
 ## Docker

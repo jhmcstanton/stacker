@@ -1,6 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
-import           Protolude                            hiding (Text, local)
-import           Protolude.Partial                    (read)
+import           Protolude                            hiding (local)
 
 import           Data.Aeson
 import           Data.Cache.LRU.IO                    (AtomicLRU)
@@ -9,10 +8,7 @@ import           Data.UUID                            (UUID)
 import qualified Data.UUID                            as UUID
 import qualified Data.UUID.V4                         as UUID
 import           Data.String                          (fromString)
-import qualified Data.Text                            as StrictText
-import           Data.Text.Lazy                       (Text)
-import qualified Data.Text.Lazy                       as Text
-import           GHC.Base                             (String)
+import qualified Data.Text.Lazy                       as LazyText
 import qualified Network.HTTP.Types.Status            as Sc
 import qualified Network.Wai.Middleware.Gzip          as Sc
 import qualified Network.Wai.Handler.WebSockets       as WaiWs
@@ -32,8 +28,8 @@ data RoomPost = CreateRoom { roomNameParam :: Text, username :: Text }
               | JoinRoom   { roomIDParam :: RoomID, username :: Text }
               deriving (Eq, Ord, Read, Show)
 
-userCookie :: UUID -> StrictText.Text
-userCookie rid = "username-" <> (UUID.toText rid)
+userCookie :: UUID -> Text
+userCookie rid = "username-" <> UUID.toText rid
 
 main :: IO ()
 main = do
@@ -62,8 +58,8 @@ scottyApp cache keepAlive =
             cr@CreateRoom{} -> createRoom cr cache
             jr@JoinRoom{}   -> do
               let rid = unRoomID . roomIDParam $ jr
-              Sc.setSimpleCookie (userCookie rid) (Text.toStrict $ username req)
-              Sc.redirect $ "/room/" <> uuidToText rid
+              Sc.setSimpleCookie (userCookie rid) (username req)
+              Sc.redirect $ "/room/" <> LazyText.fromStrict (toText rid)
     Sc.get "/static/cookie-policy/"  $ Sc.file "static/cookie-policy.html"
     Sc.get "/static/privacy-policy/" $ Sc.file "static/privacy.html"
     -- TODO: Apply some simple scheme to avoid spam creation of rooms
@@ -138,12 +134,12 @@ createRoom req cache = do
     rID   <- fmap RoomID UUID.nextRandom
     let rstate = newRoom rID . roomNameParam $ req
     Cache.insert rID rstate cache
-    putLText $ "Created room with ID [" <> roomIDToText rID <> "]"
+    putText $ "Created room with ID [" <> roomIDToText rID <> "]"
     pure rstate
 
   let rid   = unRoomID $ roomID rstate
-  Sc.setSimpleCookie (userCookie rid) (Text.toStrict $ username req)
-  Sc.redirect $ "/room/" <> uuidToText rid <> "#facilitator"
+  Sc.setSimpleCookie (userCookie rid) (username req)
+  Sc.redirect $ "/room/" <> LazyText.fromStrict (toText rid) <> "#facilitator"
 
 param :: Text -> [Sc.Param] -> Maybe Text
 param var = fmap snd . find (\(par, _) -> par == var)
@@ -211,4 +207,4 @@ iterate_ :: Monad f => a -> (a -> f a) -> f a
 iterate_ a f = f a >>= \a' -> iterate_ a' f
 
 sysWithDefault :: String -> (String -> a) -> a -> IO a
-sysWithDefault var f x = fmap (fromMaybe x . fmap f) $ Sys.lookupEnv var
+sysWithDefault var f x = fromMaybe x . fmap f <$> Sys.lookupEnv var
