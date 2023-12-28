@@ -1,4 +1,4 @@
-FROM haskell:8.10.4-buster
+FROM docker.io/haskell:9.8.1-slim-buster
 
 # Building dependencies to cache them
 WORKDIR /opt/
