@@ -19,8 +19,7 @@ to build and run locally on port 8080.
 
 ### Client
 
-This project is now using tailwind for styling. Run the following to make
-changes and build the new css.
+This project is now using tailwind for styling. Run the following to make changes and build the new css.
 
 ```
 npx tailwindcss -i ./static/src/style.css -o ./static/style.css  --watch
@@ -28,9 +27,7 @@ npx tailwindcss -i ./static/src/style.css -o ./static/style.css  --watch
 
 ## Deploy to Heroku
 
-I am currently hosting my instance of `stacker` on Heroku. To do the same you
-will need to add a `stack` buildpack for your project. [This
-one](https://github.com/mfine/heroku-buildpack-stack) has worked well for me.
+I am currently hosting my instance of `stacker` on Heroku. To do the same you will need to add a `stack` buildpack for your project. [This one](https://github.com/mfine/heroku-buildpack-stack) has worked well for me.
 
 
 ## Docker
@@ -48,7 +45,7 @@ docker build . -t stacker:<tag name>
 Run the image with:
 
 ```
-docker run --rm --name stacker -p 80:80 stacker:<tag name>
+docker run --rm --name stacker -p 8080:8080 stacker:<tag name>
 ```
 
 Note, if your hosting provider expects a specific port or host you can assign it

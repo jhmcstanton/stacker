@@ -2,6 +2,7 @@
 *.o
 .stack-work/
 node_modules/
+dist-newstyle/
 .cabal-sandbox
 cabal.sandbox.config
 .DS_Store

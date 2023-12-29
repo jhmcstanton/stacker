@@ -1,4 +1,3 @@
-**/.git
-**/.stack-work
+Containerfile
 Dockerfile
 dist-newstyle/

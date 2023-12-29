@@ -7,7 +7,7 @@ maintainer:    jim@jhmcstanton.com
 copyright:     2021 Jim McStanton
 license:       AGPL-3.0-or-later
 license-file:  LICENSE
-extra-source-files:
+extra-doc-files:
     README.md
     CHANGELOG.md
 
@@ -16,14 +16,14 @@ executable              stacker
     main-is:            Main.hs
     ghc-options:        -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
     default-extensions: OverloadedStrings
-    build-depends:      base                    >= 4      && < 5
+    build-depends:      base                    >= 4
                       , aeson
                       , containers
                       , http-types
                       , lrucache
                       , protolude
                       , scotty
-                      , text
+                      , text                    < 2
                       , uuid
                       , wai
                       , wai-extra
