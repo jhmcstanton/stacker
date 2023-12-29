@@ -66,15 +66,23 @@ scottyApp cache keepAlive =
     -- TODO: Apply some simple scheme to avoid spam creation of rooms
     Sc.get "/room/:pRoomID"    $ Sc.file "room.html"
     -- TODO: setup some static middleware
-    Sc.get "/static/client.js" $ Sc.file "static/client.js"
-    Sc.get "/static/invite.js" $ Sc.file "static/invite.js"
-    Sc.get "/static/style.css" $ Sc.file "static/style.css"
+    Sc.get "/static/client.js" $ do
+      Sc.addHeader "Content-Type" "text/javascript"
+      Sc.file "static/client.js"
+    Sc.get "/static/invite.js" $ do
+      Sc.addHeader "Content-Type" "text/javascript"
+      Sc.file "static/invite.js"
+    Sc.get "/static/style.css" $ do
+      Sc.addHeader "Content-Type" "text/css"
+      Sc.file "static/style.css"
 
     case keepAlive of
       Nothing  -> pure ()
       Just url -> do
         Sc.get (Sc.capture url) $ Sc.file "static/keepalive.html"
-        Sc.get "/static/keepalive.js" $ Sc.file "static/keepalive.js"
+        Sc.get "/static/keepalive.js" $ do
+          Sc.addHeader "Content-Type" "text/javascript"
+          Sc.file "static/keepalive.js"
 
 websockApp :: RoomCache -> WS.ServerApp
 websockApp cache pending = do
