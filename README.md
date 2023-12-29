@@ -2,6 +2,10 @@
 
 Simple web app to facilitate stack based video meetings.
 
+## Check It Out
+
+You can try `stacker` out [over here](https://stacker-2je4.onrender.com/)
+
 ## Dev
 
 ### Server
@@ -24,11 +28,6 @@ This project is now using tailwind for styling. Run the following to make change
 ```
 npx tailwindcss -i ./static/src/style.css -o ./static/style.css  --watch
 ```
-
-## Deploy to Heroku
-
-I am currently hosting my instance of `stacker` on Heroku. To do the same you will need to add a `stack` buildpack for your project. [This one](https://github.com/mfine/heroku-buildpack-stack) has worked well for me.
-
 
 ## Docker
 
